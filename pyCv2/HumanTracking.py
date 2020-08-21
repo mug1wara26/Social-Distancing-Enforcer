@@ -3,9 +3,10 @@ import imutils
 import cv2
 
 
-def display_bounding_box(frame):
+def display_frame(cap, threshold):
     net = cv2.dnn.readNetFromCaffe("../Model/MobileNetSSD_deploy.prototxt.txt", "../Model/MobileNetSSD_deploy.caffemodel")
 
+    ret, frame = cap.read()
     frame = imutils.resize(frame, width=400)
 
     (h, w) = frame.shape[:2]
@@ -21,7 +22,7 @@ def display_bounding_box(frame):
         confidence = detections[0, 0, i, 2]
         # filter out weak detections by ensuring the `confidence` is
         # greater than the minimum confidence
-        if confidence > 0.2:
+        if confidence > threshold:
             # extract the index of the class label from the
             # `detections`, then compute the (x, y)-coordinates of
             # the bounding box for the object
@@ -42,9 +43,9 @@ if __name__ == "__main__":
     cap = cv2.VideoCapture(0)
 
     while True:
-        ret, frame = cap.read()
+        frame = display_frame(cap)
 
-        cv2.imshow("Frame", display_bounding_box(frame))
+        cv2.imshow("Frame", frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

@@ -4,21 +4,21 @@ import cv2
 import os
 
 
-def get_rectangle(cap, threshold):
+def get_boundaries(cap, threshold):
     net = cv2.dnn.readNetFromCaffe(os.getcwd() + "/Model/MobileNetSSD_deploy.prototxt.txt",
                                    os.getcwd() + "/Model/MobileNetSSD_deploy.caffemodel")
 
-    ret, frame = cap.read()
-    frame = imutils.resize(frame, width=400)
+    ret, innerframe = cap.read()
+    innerframe = imutils.resize(innerframe, width=400)
 
-    (h, w) = frame.shape[:2]
-    blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)),
+    (h, w) = innerframe.shape[:2]
+    blob = cv2.dnn.blobFromImage(cv2.resize(innerframe, (300, 300)),
                                  0.007843, (300, 300), 127.5)
 
     net.setInput(blob)
     detections = net.forward()
 
-    startX, startY, endX, endY, confidence = None, None, None, None, None
+    dimensions = []
 
     for i in np.arange(0, detections.shape[2]):
         # extract the confidence (i.e., probability) associated with
@@ -31,32 +31,39 @@ def get_rectangle(cap, threshold):
             # the bounding box for the object
             box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
             (startX, startY, endX, endY) = box.astype("int")
-    return startX, startY, endX, endY, confidence
+
+            dimensions.append([startX, startY, endX, endY, confidence])
+    return innerframe, dimensions
 
 
-def display_frame(cap, threshold):
-    ret, frame = cap.read()
+def display_frame(innerframe, dimensions):
+    for dimension in dimensions:
+        startX = dimension[0]
+        startY = dimension[1]
+        endX = dimension[2]
+        endY = dimension[3]
+        confidence = dimension[4]
 
-    for (startX, startY, endX, endY, confidence) in get_rectangle(cap, threshold):
-        cv2.rectangle(frame, (startX, startY), (endX, endY),
+        cv2.rectangle(innerframe, (startX, startY), (endX, endY),
                       (0, 255, 0), 2)
         y = startY - 15 if startY - 15 > 15 else startY + 15
-        cv2.putText(frame, label, (startX, y),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
         # draw the prediction on the frame
         label = "{}: {:.2f}%".format("Person",
                                      confidence * 100)
-        
-    return cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        cv2.putText(innerframe, label, (startX, y),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
+    return cv2.cvtColor(innerframe, cv2.COLOR_RGB2BGR)
 
 
 if __name__ == "__main__":
     cap = cv2.VideoCapture(0)
 
     while True:
-        frame = display_frame(cap, 0.7)
+        innerframe, dimensions = get_boundaries(cap, 0.7)
+        frame = display_frame(innerframe, dimensions)
 
-        cv2.imshow("Frame", frame)
+        cv2.imshow("Frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

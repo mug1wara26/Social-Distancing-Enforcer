@@ -7,7 +7,6 @@ from time import sleep
 
 
 def get_points(frame):
-    bottom_centres = []
     hog = cv2.HOGDescriptor()
     hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
@@ -24,22 +23,20 @@ def get_points(frame):
     rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
     pick = non_max_suppression(rects, probs=None, overlapThresh=0.5)
     # draw the centres of the people
-    for (xA, yA, wA, hA) in pick:
-        bottom_centres.append((xA + wA) / 2)
-    return bottom_centres
+    return pick
 
 
 def display_frame(cap):
     ret, frame = cap.read()
-    for(x, y) in get_points(frame):
-        cv2.circle(frame, (x, y), 1, (0, 0, 0), 1)
+    for (xA, yA, wA, hA) in get_points(frame):
+        cv2.rectangle(frame, (xA, yA), (wA, hA), (0, 255, 0), 2)
     if ret:
         return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
 
 if __name__ == "__main__":
     cap = cv2.VideoCapture(0)
-    
+
     while True:
         cv2.imshow('frame', display_frame(cap))
 

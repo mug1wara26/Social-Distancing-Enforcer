@@ -12,11 +12,12 @@ def get_points(frame, threshold):
 
     image = imutils.resize(frame, width=min(400, frame.shape[1]))
     (rects, weights) = hog.detectMultiScale(image, winStride=(4, 4),
-                                            padding=(8, 8), scale=1.05)
+                                            padding=(8, 8), scale=0.8)
 
     # apply non-maxima suppression to the bounding boxes using a
     # fairly large overlap threshold to try to maintain overlapping
     # boxes that are still people
+    #return  rects
     rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
     pick = non_max_suppression(rects, probs=None, overlapThresh=threshold)
     return pick
@@ -26,7 +27,7 @@ def display_frame(cap, threshold):
     ret, frame = cap.read()
     frame = cv2.flip(frame, 1)
     for (xA, yA, wA, hA) in get_points(frame, threshold):
-        cv2.rectangle(frame, (wA + wA - xA, yA), (wA, hA), (0, 255, 0), 2)
+        cv2.rectangle(frame, (xA, yA), (wA, hA), (0, 255, 0), 2)
     if ret:
         return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 

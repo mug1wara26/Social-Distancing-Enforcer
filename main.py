@@ -11,7 +11,7 @@ class MainFrame(wx.Frame):
         super().__init__(None, title="Social Distancing Enforcer")
         self.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
-        self.img_panel = UI.image.CV2ImagePanel(self, HumanTracking.display_frame, self.cap)
+        self.img_panel = UI.image.CV2ImagePanel(self, HumanTracking.display_frame, self.cap, "resources/config_mode")
 
         self.slider = wx.Slider(self, maxValue=100)
         # self.slider.SetSizeHints(100,1000)

@@ -3,9 +3,9 @@ import cv2
 
 
 class CV2ImagePanel(wx.Panel):
-    def __init__(self, parent, image_factory, cap, fps=15):
+    def __init__(self, parent, image_factory, cap, config_png_name, fps=15):
         super().__init__(parent)
-        config_img_bitmap = wx.Bitmap(wx.Image("resources/config_mode.png", wx.BITMAP_TYPE_ANY).Scale(200, 30))
+        config_img_bitmap = wx.Bitmap(wx.Image(config_png_name + ".png", wx.BITMAP_TYPE_ANY).Scale(200, 30))
         self.config_img_dims = config_img_bitmap.GetSize()
         self.config_img_dc = wx.MemoryDC(config_img_bitmap)
         self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
@@ -38,7 +38,7 @@ class CV2ImagePanel(wx.Panel):
             e.Skip()
 
     def on_resize(self, e):
-        
+        e.Skip()  # might change in future in attempt to allow window resize
 
     def on_paint(self, e):
         dc = wx.BufferedPaintDC(self, self.bmp)

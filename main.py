@@ -16,12 +16,22 @@ class MainFrame(wx.Frame):
         self.slider = wx.Slider(self, maxValue=100)
         # self.slider.SetSizeHints(100,1000)
         bot_row = wx.BoxSizer(wx.HORIZONTAL)
-        bot_row.Add(wx.StaticText(self, label="Overlap Threshold:"))
+        bot_row.Add(wx.StaticText(self, label="Overlap Threshold:"), 0, wx.ALIGN_CENTER, 5)
         bot_row.Add(self.slider)
         bot_row.AddSpacer(30)
+
         self.config_but = wx.Button(self, label="Configure")
-        self.calibrating = False
+        self.length_text = wx.TextCtrl(self, size=wx.Size(80, 22))
+        self.width_text = wx.TextCtrl(self, size=wx.Size(80, 22))
         bot_row.Add(self.config_but)
+        bot_row.AddSpacer(20)
+        bot_row.Add(wx.StaticText(self, label="Length (m):"), 0, wx.ALIGN_CENTER, 5)
+        bot_row.AddSpacer(10)
+        bot_row.Add(self.length_text)
+        bot_row.AddSpacer(10)
+        bot_row.Add(wx.StaticText(self, label="Width (m):"), 0, wx.ALIGN_CENTER, 5)
+        bot_row.AddSpacer(10)
+        bot_row.Add(self.width_text)
         bot_row.SetMinSize(self.img_panel.GetMinWidth() - 20, 20)
 
         self.v_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -52,15 +62,15 @@ class MainFrame(wx.Frame):
 
     def on_click(self, e):
         if self.img_panel.configuring and len(dots := self.img_panel.get_dots()) == 4:
-            wx.CallLater(500, self.after_config)
+            wx.CallLater(500, self.after_dot_config)
             print(list(map(operator.methodcaller("Get"), dots))) # use for dis estim
+            print(self.length_text.GetLineText(0), self.width_text.GetLineText(0)) #l and w
 
-    def after_config(self):
+    def after_dot_config(self):
         self.img_panel.dotting = False
         self.img_panel.configuring = False
         self.img_panel.clear_dots()
         self.config_but.Enable(True)
-
 
 app = wx.App()
 MainFrame().Show()

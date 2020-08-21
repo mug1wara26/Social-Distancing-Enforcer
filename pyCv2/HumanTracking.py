@@ -37,24 +37,15 @@ def display_frame(cap):
         return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
 
-#Used to create a circle on opencv frame to display on wxpython
-def create_circle(frame, x, y):
-    cv2.circle(frame, (x, y), 2, (0, 255, 0), 2)
+if __name__ == "__main__":
+    cap = cv2.VideoCapture(0)
+    
+    while True:
+        cv2.imshow('frame', display_frame(cap))
 
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
-"""
-cap = cv2.VideoCapture(0)
-while True:
-    # Capture frame-by-frame
-    ret, frame = cap.read()
-
-    # Display the resulting frame
-    cv2.imshow('frame', cv2.drawContours(frame, get_paper_location(frame), -1, (0,255,0), 3))
-
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-# When everything done, release the capture
-cap.release()
-cv2.destroyAllWindows()
-"""
+    # When everything done, release the capture
+    cap.release()
+    cv2.destroyAllWindows()

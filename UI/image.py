@@ -12,7 +12,8 @@ class CV2ImagePanel(wx.Panel):
         # init the first frame
         frame = self.image_factory()
         dims = tuple(reversed(frame.shape[:2]))
-        self.GetParent().SetSize(*dims)
+        self.SetSize(*dims)
+        self.SetSizeHints(*dims)
 
         self.bmp = wx.Bitmap.FromBuffer(*dims, frame)
 

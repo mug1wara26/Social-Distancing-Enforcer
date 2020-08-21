@@ -1,10 +1,11 @@
 import wx
+import cv2
 
 
 class CV2ImagePanel(wx.Panel):
-    def __init__(self, parent, image_factory, cap, fps=15):
+    def __init__(self, parent, image_factory, cap, config_png_name, fps=15):
         super().__init__(parent)
-        config_img_bitmap = wx.Bitmap(wx.Image("resources/config_mode.png", wx.BITMAP_TYPE_ANY).Scale(200, 30))
+        config_img_bitmap = wx.Bitmap(wx.Image(config_png_name + ".png", wx.BITMAP_TYPE_ANY).Scale(200, 30))
         self.config_img_dims = config_img_bitmap.GetSize()
         self.config_img_dc = wx.MemoryDC(config_img_bitmap)
         self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
@@ -18,9 +19,7 @@ class CV2ImagePanel(wx.Panel):
         # init the first frame
         frame = self.image_factory(self.cap, self.threshold)
         dims = tuple(reversed(frame.shape[:2]))
-        self.SetSize(*dims)
         self.SetSizeHints(*dims)
-
         self.bmp = wx.Bitmap.FromBuffer(*dims, frame)
 
         # update frame regularly
@@ -31,12 +30,16 @@ class CV2ImagePanel(wx.Panel):
         self.Bind(wx.EVT_TIMER, self.next_frame)
 
         self.Bind(wx.EVT_LEFT_DOWN, self.on_click)
+        self.Bind(wx.EVT_SIZE, self.on_resize)
 
     def on_click(self, e):
         if self.dotting:
             self.dots.append(e.GetPosition())
             e.ResumePropagation(1)
             e.Skip()
+
+    def on_resize(self, e):
+        e.Skip()  # might change in future in attempt to allow window resize
 
     def on_paint(self, e):
         dc = wx.BufferedPaintDC(self, self.bmp)

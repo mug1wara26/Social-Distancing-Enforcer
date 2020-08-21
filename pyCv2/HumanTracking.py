@@ -34,11 +34,15 @@ def display_frame(cap):
         return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
 
+<<<<<<< HEAD
+
+=======
 if __name__ == "__main__":
     cap = cv2.VideoCapture(0)
 
     while True:
         cv2.imshow('frame', display_frame(cap))
+>>>>>>> 4ed3f34e4b826662f18b70f892cd9bba323586fd
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

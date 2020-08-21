@@ -33,4 +33,4 @@ def display_frame(cap):
     for(x, y) in get_points(frame):
         cv2.circle(frame, (x, y), 1, (0, 0, 0), 1)
     if ret:
-        return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        return frame

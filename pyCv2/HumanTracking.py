@@ -4,8 +4,9 @@ import cv2
 import os
 
 
-def display_frame(cap, threshold):
-    net = cv2.dnn.readNetFromCaffe(os.getcwd() + "/Model/MobileNetSSD_deploy.prototxt.txt", os.getcwd() + "/Model/MobileNetSSD_deploy.caffemodel")
+def get_rectangle(cap, threshold):
+    net = cv2.dnn.readNetFromCaffe(os.getcwd() + "/Model/MobileNetSSD_deploy.prototxt.txt",
+                                   os.getcwd() + "/Model/MobileNetSSD_deploy.caffemodel")
 
     ret, frame = cap.read()
     frame = imutils.resize(frame, width=400)
@@ -17,6 +18,8 @@ def display_frame(cap, threshold):
     net.setInput(blob)
     detections = net.forward()
 
+    startX, startY, endX, endY, confidence = None, None, None, None, None
+
     for i in np.arange(0, detections.shape[2]):
         # extract the confidence (i.e., probability) associated with
         # the prediction
@@ -24,20 +27,27 @@ def display_frame(cap, threshold):
         # filter out weak detections by ensuring the `confidence` is
         # greater than the minimum confidence
         if confidence > threshold:
-            # extract the index of the class label from the
-            # `detections`, then compute the (x, y)-coordinates of
+            # compute the (x, y)-coordinates of
             # the bounding box for the object
             box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
             (startX, startY, endX, endY) = box.astype("int")
-            # draw the prediction on the frame
-            label = "{}: {:.2f}%".format("Person",
-                                         confidence * 100)
-            cv2.rectangle(frame, (startX, startY), (endX, endY),
-                          (0, 255, 0), 2)
-            y = startY - 15 if startY - 15 > 15 else startY + 15
-            cv2.putText(frame, label, (startX, y),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-    return frame
+    return startX, startY, endX, endY, confidence
+
+
+def display_frame(cap, threshold):
+    ret, frame = cap.read()
+
+    for (startX, startY, endX, endY, confidence) in get_rectangle(cap, threshold):
+        cv2.rectangle(frame, (startX, startY), (endX, endY),
+                      (0, 255, 0), 2)
+        y = startY - 15 if startY - 15 > 15 else startY + 15
+        cv2.putText(frame, label, (startX, y),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        # draw the prediction on the frame
+        label = "{}: {:.2f}%".format("Person",
+                                     confidence * 100)
+        
+    return cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
 
 if __name__ == "__main__":

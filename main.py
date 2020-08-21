@@ -36,11 +36,12 @@ class VideoPanel(wx.Panel):
     def __init__(self, parent):
         super().__init__(parent)
 
-        self.img_panel = UI.image.CV2ImagePanel(self, HumanTracking.display_frame, cv2.VideoCapture(0, cv2.CAP_DSHOW), r"resources/config_mode")
+        self.img_panel = UI.image.CV2ImagePanel(self, HumanTracking.display_frame, cv2.VideoCapture(0, cv2.CAP_DSHOW),
+                                                r"resources/config_mode")
 
         self.slider = wx.Slider(self, maxValue=100)
         bot_row = wx.BoxSizer(wx.HORIZONTAL)
-        bot_row.Add(wx.StaticText(self, label="Overlap Threshold:"), 0, wx.ALIGN_CENTER, 5)
+        bot_row.Add(wx.StaticText(self, label="Confidence:"), 0, wx.ALIGN_CENTER, 5)
         bot_row.Add(self.slider)
         bot_row.AddStretchSpacer(20)
 
@@ -69,8 +70,6 @@ class VideoPanel(wx.Panel):
         self.slider.Bind(wx.EVT_SCROLL_CHANGED, self.on_slider_change)
         self.config_but.Bind(wx.EVT_BUTTON, self.on_config)
 
-
-
     def on_slider_change(self, e):
         self.img_panel.threshold = self.slider.GetValue() / 100
 
@@ -91,9 +90,9 @@ class VideoPanel(wx.Panel):
         self.img_panel.clear_dots()
         self.config_but.Enable(True)
 
-    def change_inp(self):
+    def change_inp(self, e):
         self.img_panel.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-        print(dir())
+        print(dir(e))
 
     def on_close(self, e):
         self.img_panel.timer.Stop()
@@ -110,7 +109,7 @@ class SettingsPanel(wx.Panel):
 
         inp_choice = wx.RadioBox(self, choices=["Webcam", "Video File"], majorDimension=1)
         inp_choice.SetSelection(0)
-        inp_choice.Bind(wx.EVT_RADIOBOX, VideoPanel.change_inp)
+        #inp_choice.Bind(wx.EVT_RADIOBOX, VideoPanel.change_inp)
 
         sizer.Add(inp_choice)
 

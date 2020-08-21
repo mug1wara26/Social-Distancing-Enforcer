@@ -12,7 +12,7 @@ class MainFrame(wx.Frame):
     def __init__(self):
         super().__init__(None, title="Social Distancing Enforcer")
 
-        self.cap = cv2.VideoCapture(os.getcwd() + "\\resources\\WalkByShop1cor.mpg", cv2.CAP_DSHOW)
+        self.cap = cv2.VideoCapture(os.getcwd() + "\\resources\\WalkByShop1cor.mpg")#, cv2.CAP_DSHOW)
 
         self.img_panel = UI.image.CV2ImagePanel(self, HumanTracking.display_frame, self.cap)
 

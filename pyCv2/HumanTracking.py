@@ -22,10 +22,10 @@ def get_points(frame, threshold):
     return pick
 
 
-def display_frame(cap):
+def display_frame(cap, threshold):
     ret, frame = cap.read()
     frame = cv2.flip(frame, 1)
-    for (xA, yA, wA, hA) in get_points(frame):
+    for (xA, yA, wA, hA) in get_points(frame, threshold):
         cv2.rectangle(frame, (wA + wA - xA, yA), (wA, hA), (0, 255, 0), 2)
     if ret:
         return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)

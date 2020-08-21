@@ -3,14 +3,16 @@ from . import utils
 
 
 class CV2ImagePanel(wx.Panel):
-    def __init__(self, parent, image_factory, fps=15):
+    def __init__(self, parent, image_factory, cap, fps=15):
         super().__init__(parent)
         self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
         self.image_factory = image_factory
         self.circles = []
+        self.cap = cap
+        self.threshold = 0
 
         # init the first frame
-        frame = self.image_factory()
+        frame = self.image_factory(self.cap, self.threshold)
         dims = tuple(reversed(frame.shape[:2]))
         self.SetSize(*dims)
         self.SetSizeHints(*dims)
@@ -34,8 +36,11 @@ class CV2ImagePanel(wx.Panel):
         dc.DrawBitmap(self.bmp, 0, 0)
 
     def next_frame(self, e):
-        frame = self.image_factory()
+        frame = self.image_factory(self.cap, self.threshold)
         for pt in self.circles:
             utils.create_circle(frame, *pt)
         self.bmp.CopyFromBuffer(frame)
         self.Refresh()
+
+    def set_threshold(self, threshold):
+        self.threshold = threshold

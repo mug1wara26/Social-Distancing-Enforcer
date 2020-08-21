@@ -12,23 +12,19 @@ class MainFrame(wx.Frame):
         self.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
         #img_sizer = wx.StaticBoxSizer(wx.VERTICAL, self, "")
-        self.img_panel = UI.image.CV2ImagePanel(self, functools.partial(HumanTracking.display_frame, self.cap))
+        self.img_panel = UI.image.CV2ImagePanel(self, HumanTracking.display_frame, self.cap)
         #img_sizer.Add(self.img_panel)
 
         self.slider = wx.Slider(self, maxValue=100)
         # self.slider.SetSizeHints(100,1000)
         bot_row = wx.BoxSizer(wx.HORIZONTAL)
-        bot_row.AddSpacer(10)
-        bot_row.Add(wx.StaticText(self, wx.ID_ANY, "Overlap Threshold"))
-        bot_row.AddSpacer(10)
+        bot_row.Add(wx.StaticText(self, wx.ID_ANY, "Overlap Threshold:"))
         bot_row.Add(self.slider)
-        bot_row.SetMinSize(self.img_panel.GetMinWidth(), 20)
+        bot_row.SetMinSize(self.img_panel.GetMinWidth() - 20, 20)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.img_panel, 1, 1, 1)
-        sizer.AddSpacer(20)
-        sizer.Add(bot_row, 0, 0, 0)
-        sizer.AddSpacer(10)
+        sizer.Add(self.img_panel)
+        sizer.Add(bot_row, 0, wx.ALL, 10)
         sizer.SetSizeHints(self)
         self.SetSizer(sizer)
 
@@ -43,7 +39,7 @@ class MainFrame(wx.Frame):
         e.Skip()
 
     def on_slider_change(self, e):
-        print(self.slider.GetValue()/100)
+        self.img_panel.set_threshold(self.slider.GetValue()/100)
 
 
 app = wx.App()

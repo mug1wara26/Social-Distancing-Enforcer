@@ -12,24 +12,28 @@ class MainFrame(wx.Frame):
     def __init__(self):
         super().__init__(None, title="Social Distancing Enforcer")
 
-        nb = wx.Notebook(self)
+        self.nb = wx.Notebook(self)
 
-        self.vid_pane = VideoPanel(nb)
-        settings_pane = SettingsPanel(nb)
+        self.vid_pane = VideoPanel(self.nb)
+        settings_pane = SettingsPanel(self.nb)
 
-        nb.AddPage(self.vid_pane, "Video")
-        nb.AddPage(settings_pane, "Settings")
+        self.nb.AddPage(self.vid_pane, "Video")
+        self.nb.AddPage(settings_pane, "Settings")
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(nb)
+        sizer.Add(self.nb)
         self.SetSizerAndFit(sizer)
 
         #os.getcwd() + r"\resources\WalkByShop1cor.mpg"
 
         self.Bind(wx.EVT_CLOSE, self.on_close)
+        self.Bind(wx.EVT_SIZE, self.on_resize)
 
     def on_close(self, e):
         self.vid_pane.on_close(e)
+
+    def on_resize(self, e):
+        self.nb.SetSize(self.GetSize())
 
 
 class VideoPanel(wx.Panel):
@@ -60,7 +64,7 @@ class VideoPanel(wx.Panel):
         bot_row.SetMinSize(self.img_panel.GetMinWidth() - 20, 20)
 
         self.v_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.v_sizer.Add(self.img_panel)
+        self.v_sizer.Add(self.img_panel, 1, wx.EXPAND)
         self.v_sizer.Add(bot_row, 0, wx.ALL, 10)
         self.SetSizerAndFit(self.v_sizer)
 

@@ -37,9 +37,7 @@ def display_frame(cap):
         return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
 
-#Used to create a circle on opencv frame to display on wxpython
-def create_circle(frame, x, y):
-    cv2.circle(frame, (x, y), 2, (0, 255, 0), 2)
+
 
 
 """

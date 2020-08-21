@@ -24,7 +24,7 @@ class MainFrame(wx.Frame):
         sizer.Add(nb)
         self.SetSizerAndFit(sizer)
 
-        os.getcwd() + r"\resources\WalkByShop1cor.mpg"
+        #os.getcwd() + r"\resources\WalkByShop1cor.mpg"
 
         self.Bind(wx.EVT_CLOSE, self.on_close)
 
@@ -91,9 +91,9 @@ class VideoPanel(wx.Panel):
         self.img_panel.clear_dots()
         self.config_but.Enable(True)
 
-    def change_inp(self, e):
+    def change_inp(self):
         self.img_panel.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-        print(dir(e))
+        print(dir())
 
     def on_close(self, e):
         self.img_panel.timer.Stop()

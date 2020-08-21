@@ -1,10 +1,11 @@
 import numpy as np
 import imutils
 import cv2
+import os
 
 
 def display_frame(cap, threshold):
-    net = cv2.dnn.readNetFromCaffe("../Model/MobileNetSSD_deploy.prototxt.txt", "../Model/MobileNetSSD_deploy.caffemodel")
+    net = cv2.dnn.readNetFromCaffe(os.getcwd() + "/Model/MobileNetSSD_deploy.prototxt.txt", os.getcwd() + "/Model/MobileNetSSD_deploy.caffemodel")
 
     ret, frame = cap.read()
     frame = imutils.resize(frame, width=400)
@@ -43,7 +44,7 @@ if __name__ == "__main__":
     cap = cv2.VideoCapture(0)
 
     while True:
-        frame = display_frame(cap)
+        frame = display_frame(cap, 0.7)
 
         cv2.imshow("Frame", frame)
 

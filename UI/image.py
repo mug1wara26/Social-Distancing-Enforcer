@@ -39,6 +39,7 @@ class CV2ImagePanel(wx.Panel):
             e.Skip()
 
     def on_resize(self, e):
+        self.bmp = wx.Bitmap(self.bmp.ConvertToImage().Scale(*self.GetSize()))
         e.Skip()  # might change in future in attempt to allow window resize
 
     def on_paint(self, e):

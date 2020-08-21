@@ -35,6 +35,7 @@ def display_bounding_box(frame):
             y = startY - 15 if startY - 15 > 15 else startY + 15
             cv2.putText(frame, label, (startX, y),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+    return frame
 
 
 if __name__ == "__main__":
@@ -43,9 +44,7 @@ if __name__ == "__main__":
     while True:
         ret, frame = cap.read()
 
-        display_bounding_box(frame)
-
-        cv2.imshow("Frame", frame)
+        cv2.imshow("Frame", display_bounding_box(frame))
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

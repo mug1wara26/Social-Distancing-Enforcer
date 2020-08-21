@@ -1,14 +1,11 @@
 import cv2
-cap = cv2.VideoCapture(0)
 
-while True:
+#def get_points(frame):
+#
+#
+
+
+def display_frame(cap):
     ret, frame = cap.read()
-
-    cv2.imshow('Camera', frame)
-
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-cap.release()
-
-cv2.destroyAllWindows()
+    if ret:
+        return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)

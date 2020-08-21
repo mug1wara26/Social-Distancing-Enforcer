@@ -109,7 +109,7 @@ class SettingsPanel(wx.Panel):
 
         inp_choice = wx.RadioBox(self, choices=["Webcam", "Video File"], majorDimension=1)
         inp_choice.SetSelection(0)
-        #inp_choice.Bind(wx.EVT_RADIOBOX, VideoPanel.change_inp)
+        # inp_choice.Bind(wx.EVT_RADIOBOX, VideoPanel.change_inp)
 
         sizer.Add(inp_choice)
 

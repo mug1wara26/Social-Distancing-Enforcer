@@ -7,7 +7,7 @@ from time import sleep
 
 
 def get_points(frame):
-    centres = []
+    bottom_centres = []
     hog = cv2.HOGDescriptor()
     hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
@@ -25,8 +25,8 @@ def get_points(frame):
     pick = non_max_suppression(rects, probs=None, overlapThresh=0.5)
     # draw the centres of the people
     for (xA, yA, wA, hA) in pick:
-        centres.append([int((xA + wA) / 2), int((yA + hA) / 2)])
-    return centres
+        bottom_centres.append((xA + wA) / 2)
+    return bottom_centres
 
 
 def display_frame(cap):

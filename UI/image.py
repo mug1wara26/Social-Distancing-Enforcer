@@ -1,4 +1,5 @@
 import wx
+import cv2
 
 
 class CV2ImagePanel(wx.Panel):
@@ -18,9 +19,6 @@ class CV2ImagePanel(wx.Panel):
         # init the first frame
         frame = self.image_factory(self.cap, self.threshold)
         dims = tuple(reversed(frame.shape[:2]))
-        self.SetSize(*dims)
-        self.SetSizeHints(*dims)
-
         self.bmp = wx.Bitmap.FromBuffer(*dims, frame)
 
         # update frame regularly
@@ -31,12 +29,16 @@ class CV2ImagePanel(wx.Panel):
         self.Bind(wx.EVT_TIMER, self.next_frame)
 
         self.Bind(wx.EVT_LEFT_DOWN, self.on_click)
+        self.Bind(wx.EVT_SIZE, self.on_resize)
 
     def on_click(self, e):
         if self.dotting:
             self.dots.append(e.GetPosition())
             e.ResumePropagation(1)
             e.Skip()
+
+    def on_resize(self, e):
+        
 
     def on_paint(self, e):
         dc = wx.BufferedPaintDC(self, self.bmp)

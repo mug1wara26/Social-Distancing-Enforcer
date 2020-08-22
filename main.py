@@ -85,6 +85,7 @@ class MainNotebook(wx.Notebook):
         e.Skip()
 
     def on_inp_change(self, e):
+        print("Filepath: ", self.settings.file_picker.GetPath())
         if e.GetSelection() and not self.settings.file_picker.GetPath():
             self.img_pane = self.create_img_pane(self, cv2.VideoCapture(self.settings.file_picker.GetPath()))
         else:

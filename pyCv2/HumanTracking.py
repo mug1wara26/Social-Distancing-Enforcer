@@ -168,8 +168,11 @@ def transformedImage(image, points, x, y, hMatrix, height, width, originalPoints
         for j in range(len(points)):
             #print(np.sqrt(((points[i][0][0] - points[j][0][0]) * width) ** 2 + ((points[i][0][1] - points[j][0][0])*height) ** 2))
             #print(abs(points[i][0][0] - points[j][0][0]) * width)
+            if(i == j):
+                continue
             if(3  > getDistance(points[i], points[j], height, width)):#np.sqrt(((points[i][0][0] - points[j][0][0]) * width) ** 2 + ((points[i][0][1] - points[j][0][1])*height) ** 2)):
                 cv2.line(image, (originalPoints[i][0], originalPoints[i][1]), (originalPoints[j][0], originalPoints[j][1]), (0, 0, 255), thickness=3)
+                cv2.putText(image, str(getDistance(points[i], points[j], height, width)) + " metres", (int((originalPoints[i][0]+originalPoints[j][0])/2), int((originalPoints[i][1]+ originalPoints[j][1])/2)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
     return warped
 

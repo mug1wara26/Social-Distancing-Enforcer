@@ -20,9 +20,14 @@ class MainFrame(wx.Frame):
         # os.getcwd() + r"\resources\WalkByShop1cor.mpg"
 
         self.Bind(wx.EVT_SIZE, self.on_resize)
+        self.Bind(wx.EVT_CLOSE, self.on_close)
 
     def on_resize(self, e):
         self.nb.SetSize(self.GetSize())
+
+    def on_close(self, e):
+        self.nb.Close()
+        e.Skip()
 
 
 class MainNotebook(wx.Notebook):
@@ -54,7 +59,7 @@ class MainNotebook(wx.Notebook):
     def after_dot_config(self):
         self.img_pane.dotting = False
         self.img_pane.configuring = False
-        self.img_paneclear_dots()
+        self.img_pane.clear_dots()
         self.settings.config_but.Enable(True)
 
     def on_slider_change(self, e):
@@ -67,6 +72,7 @@ class MainNotebook(wx.Notebook):
 
     def on_close(self, e):
         self.img_pane.on_close(e)
+        e.Skip()
 
     def on_inp_change(self, e):
         self.img_pane.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)

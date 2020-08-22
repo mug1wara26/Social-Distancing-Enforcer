@@ -14,12 +14,12 @@ class CV2ImagePanel(wx.Panel):
         self.image_factory = image_factory
         self.dots = []
         self.cap = cap
-        self.threshold = 0
+        self.threshold1 = self.threshold2 = 0
         self.dotting = False
         self.configuring = False
 
         # init the first frame
-        frame = self.image_factory(self.cap, self.threshold)
+        frame = self.image_factory(self.cap, self.threshold1, self.threshold2)
         dims = tuple(reversed(frame.shape[:2]))
         self.SetSizeHints(*dims)
         self.bmp = wx.Bitmap.FromBuffer(*dims, frame)
@@ -35,8 +35,6 @@ class CV2ImagePanel(wx.Panel):
         self.Bind(wx.EVT_SIZE, self.on_resize)
         self.Bind(wx.EVT_CLOSE, self.on_close)
 
-        self.settings = None
-
     def on_click(self, e):
         if self.dotting:
             self.dots.append(e.GetPosition())
@@ -48,7 +46,6 @@ class CV2ImagePanel(wx.Panel):
         self.cap.release()
         self.Close()
         e.Skip()
-
 
     def on_resize(self, e):
         self.bmp = wx.Bitmap(self.bmp.ConvertToImage().Scale(*self.GetSize()))
@@ -66,8 +63,8 @@ class CV2ImagePanel(wx.Panel):
                 dc.DrawLine(self.dots[0], self.dots[3])
 
     def next_frame(self, e):
-        frame = self.image_factory(self.cap, self.threshold)
-        self.bmp = wx.Bitmap.FromBuffer(640, 360, cv2.resize(frame, (640, 360)))
+        frame = self.image_factory(self.cap, self.threshold1, self.threshold2)
+        self.bmp = wx.Bitmap.FromBuffer(*self.GetSize(), cv2.resize(frame, tuple(self.GetSize())))
         self.Refresh()
 
     def get_dots(self):
@@ -81,42 +78,57 @@ class SettingsPanel(wx.Panel):
     def __init__(self, parent):
         super().__init__(parent)
 
-        self.slider = wx.Slider(self, maxValue=100)
+        self.slider1 = wx.Slider(self, maxValue=100)
         row1 = wx.BoxSizer(wx.HORIZONTAL)
         row1.Add(wx.StaticText(self, label="Confidence:"), 0, wx.ALIGN_CENTER, 5)
-        row1.Add(self.slider)
-        row1.AddStretchSpacer(20)
-        self.config_but = wx.Button(self, label="Configure")
-        row1.Add(self.config_but)
+        row1.Add(self.slider1)
 
-        self.length_text = wx.TextCtrl(self, size=wx.Size(80, 22), value="0")
-        self.width_text = wx.TextCtrl(self, size=wx.Size(80, 22), value="0")
+        self.slider2 = wx.Slider(self, maxValue=100)
         row2 = wx.BoxSizer(wx.HORIZONTAL)
-        row2.Add(wx.StaticText(self, label="Length (m):"), 0, wx.ALIGN_CENTER, 5)
-        row2.AddStretchSpacer(10)
-        row2.Add(self.length_text)
-        row2.AddStretchSpacer(10)
-        row2.Add(wx.StaticText(self, label="Width (m):"), 0, wx.ALIGN_CENTER, 5)
-        row2.AddStretchSpacer(10)
-        row2.Add(self.width_text)
+        row2.Add(wx.StaticText(self, label="Minimum Points:"), 0, wx.ALIGN_CENTER, 5)
+        row2.Add(self.slider2)
 
+        self.config_but = wx.Button(self, label="Configure")
+
+        self.length_text = wx.TextCtrl(self, size=wx.Size(80, 22), value="1")
+        self.width_text = wx.TextCtrl(self, size=wx.Size(80, 22), value="1")
         row3 = wx.BoxSizer(wx.HORIZONTAL)
+        row3.Add(wx.StaticText(self, label="Length (m):"), 0, wx.ALIGN_CENTER, 5)
+        row3.AddStretchSpacer(10)
+        row3.Add(self.length_text)
 
+        row4 = wx.BoxSizer(wx.HORIZONTAL)
+        row4.Add(wx.StaticText(self, label="Width (m):"), 0, wx.ALIGN_CENTER, 5)
+        row4.AddStretchSpacer(10)
+        row4.Add(self.width_text)
+
+        """
+        row4 = wx.BoxSizer(wx.HORIZONTAL)
+    
         inp_choice = wx.RadioBox(self, choices=["Webcam", "Video File"], majorDimension=1)
         inp_choice.SetSelection(0)
-        row3.Add(inp_choice)
-        row3.AddStretchSpacer(10)
+        row4.Add(inp_choice)
+        row4.AddStretchSpacer(10)
         self.file_picker = wx.FilePickerCtrl(self)
-        row3.Add(self.file_picker, 0, wx.EXPAND, 5)
+        row4.Add(self.file_picker, 0, wx.EXPAND, 5)
+        """
 
         v_sizer = wx.BoxSizer(wx.VERTICAL)
         row1.SetSizeHints(self)
         row2.SetSizeHints(self)
         row3.SetSizeHints(self)
+        row4.SetSizeHints(self)
 
         v_sizer.Add(row1, 0, wx.ALL, 10)
         v_sizer.Add(row2, 0, wx.ALL, 10)
         v_sizer.Add(row3, 0, wx.ALL, 10)
+        v_sizer.Add(row4, 0, wx.ALL, 10)
+        v_sizer.Add(self.config_but)
+        # start_button = wx.Button(self, label="Start")
+        # v_sizer.Add(start_button)
         v_sizer.SetSizeHints(self)
 
         self.SetSizerAndFit(v_sizer)
+
+        # start_button.Bind(wx.EVT_BUTTON, self.start)
+

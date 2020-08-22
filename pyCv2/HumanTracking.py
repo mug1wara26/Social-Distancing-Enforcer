@@ -5,9 +5,29 @@ import numpy as np
 import imutils
 import cv2
 
+
+
+right_clicks = list()
+
+def mouse_callback(event, x, y, flags, params):
+    # right-click event value is 2
+    if event == 2:
+        global right_clicks
+        if len(right_clicks) != 4:
+
+            # store the coordinates of the right-click event
+            right_clicks.append([x, y])
+            print(right_clicks)
+
+
+
 def get_boundaries(cap, threshold):
-    net = cv2.dnn.readNetFromCaffe("../Model/MobileNetSSD_deploy.prototxt.txt",
+    if __name__ == "__main__":
+        net = cv2.dnn.readNetFromCaffe("../Model/MobileNetSSD_deploy.prototxt.txt",
                                    "../Model/MobileNetSSD_deploy.caffemodel")
+    else:
+        net = cv2.dnn.readNetFromCaffe("Model/MobileNetSSD_deploy.prototxt.txt",
+                                       "Model/MobileNetSSD_deploy.caffemodel")
 
     ret, oriframe = cap.read()
     innerframe = imutils.resize(oriframe, width=400)
@@ -36,7 +56,7 @@ def get_boundaries(cap, threshold):
             if(idx == 15):
                 dimensions.append([startX, startY, endX, endY, confidence])
 
-    return innerframe, dimensions, oriframe
+    return oriframe, innerframe, dimensions
 
 
 def display_frame(frame, innerframe, dimensions, corners, h, w, minPts, epsilon, threshold):
@@ -83,7 +103,6 @@ def display_frame(frame, innerframe, dimensions, corners, h, w, minPts, epsilon,
         print("Failures detected!")
         #os.chdir("../Detection/")
         cv2.imwrite("./" + datetime.now().strftime("%m/%d/%Y,%H:%M:%S") + ".jpg", frame)
-
 
     return cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
@@ -185,6 +204,7 @@ def get_ratio(orimage, transimage):
 
 
 if __name__ == "__main__":
+    #global right_clicks
     cap = cv2.VideoCapture("../resources/View_001/frame_%04d.jpg", cv2.CAP_IMAGES)
     #cap = cv2.VideoCapture("../resources/video.avi")
     points = np.array([[53, 248], [87, 198], [141, 205], [117, 257]])  # pass 4 points here
@@ -196,9 +216,19 @@ if __name__ == "__main__":
         #ret, orimage = cap.read()
 
         frame = display_frame(oriframe, transimage, dimensions, points, height, width, minPts, epsilon, threshold)
+        for p in right_clicks:
+            cv2.circle(frame, (p[0], p[1]), radius=3, color=(255, 255, 255), thickness=-1);
         cv2.imshow("frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        cv2.setMouseCallback("frame", mouse_callback, frame)
+
+        if(len(right_clicks) == 4):
+            points = np.array(right_clicks)
+
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+
+        if cv2.waitKey(1) & 0xFF == ord('r'):
+            right_clicks.clear()
 
     # When everything done, release the capture
     cap.release()

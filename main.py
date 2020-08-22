@@ -35,19 +35,18 @@ class MainFrame(wx.Frame):
 class MainNotebook(wx.Notebook):
     def __init__(self, parent):
         super().__init__(parent)
-        self.dots = None
+        self.dots = np.array((np.array((0, 0)), np.array((20, 0)), np.array((0, 20)), np.array((20, 20))))
 
         cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
-        self.img_pane = self.create_img_pane(self, cap)
         self.settings = UI.image.SettingsPanel(self)
+        self.img_pane = UI.image.CV2ImagePanel(self, self.img_factory, r"resources/config_mode", cap)
 
         self.AddPage(self.img_pane, "Video")
         self.AddPage(self.settings, "Settings")
 
         self.Bind(wx.EVT_LEFT_DOWN, self.on_click)
         self.Bind(wx.EVT_BUTTON, self.on_config)
-        self.Bind(wx.EVT_TEXT, self.call_transform_info)
         self.Bind(wx.EVT_SCROLL_CHANGED, self.on_slider_change)
         self.Bind(wx.EVT_RADIOBOX, self.on_inp_change)
         self.Bind(wx.EVT_FILEPICKER_CHANGED, self.on_inp_change)
@@ -56,13 +55,8 @@ class MainNotebook(wx.Notebook):
     def on_click(self, e):
         if self.img_pane.configuring and len(dots := self.img_pane.get_dots()) == 4:
             wx.CallLater(500, self.after_dot_config)
-            self.dots = list(map(np.array, map(operator.methodcaller("Get"), dots)))
-            print(self.dots)
+            self.dots = np.array(list(map(np.array, map(operator.methodcaller("Get"), dots))))
         e.Skip()
-
-    def call_transform_info(self, e=None):
-        HumanTracking.transformInfo(self.dots, int(self.settings.length_text.GetLineText(0)),
-                                    int(self.settings.width_text.GetLineText(0)), 500)
 
     def after_dot_config(self):
         self.img_pane.dotting = False
@@ -71,7 +65,8 @@ class MainNotebook(wx.Notebook):
         self.settings.config_but.Enable(True)
 
     def on_slider_change(self, e):
-        self.img_pane.threshold = self.settings.slider.GetValue() / 100
+        self.img_pane.threshold1 = self.settings.slider1.GetValue() / 100
+        self.img_pane.threshold2 = 2 + self.settings.slider1.GetValue() / 10
 
     def on_config(self, e):
         self.img_pane.dotting = True
@@ -84,18 +79,18 @@ class MainNotebook(wx.Notebook):
         e.Skip()
 
     def on_inp_change(self, e):
-        print("Filepath: ", self.settings.file_picker.GetPath())
-        if e.GetSelection() and not self.settings.file_picker.GetPath():
-            self.img_pane = self.create_img_pane(self, cv2.VideoCapture(self.settings.file_picker.GetPath()))
+        if e.GetSelection():
+            self.settings.file_picker.Enable(True)
         else:
-            self.img_pane = self.create_img_pane(self, cv2.VideoCapture(0, cv2.CAP_DSHOW))
+            self.settings.file_picker.Enable(False)
 
-    @staticmethod
-    def create_img_pane(parent, cap):
-        return UI.image.CV2ImagePanel(parent, lambda a, b: HumanTracking.display_frame(cap.read()[1],
-            *HumanTracking.get_boundaries(a, b)), r"resources/config_mode", cap)
+    def img_factory(self, cap, thres1, thres2):
+        return HumanTracking.display_frame(*HumanTracking.get_boundaries(cap, thres1), self.dots,
+                                    float(self.settings.length_text.GetLineText(0)),
+                                    float(self.settings.width_text.GetLineText(0)), thres2, 1, 5)
 
 
 app = wx.App()
 MainFrame().Show()
 app.MainLoop()
+7

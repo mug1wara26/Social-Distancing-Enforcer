@@ -64,6 +64,8 @@ class CV2ImagePanel(wx.Panel):
 
     def next_frame(self, e):
         frame = self.image_factory(self.cap, self.threshold1, self.threshold2)
+        if frame is None:
+            return
         self.bmp = wx.Bitmap.FromBuffer(*self.GetSize(), cv2.resize(frame, tuple(self.GetSize())))
         self.Refresh()
 
@@ -81,6 +83,7 @@ class SettingsPanel(wx.Panel):
         self.slider1 = wx.Slider(self, maxValue=100)
         row1 = wx.BoxSizer(wx.HORIZONTAL)
         row1.Add(wx.StaticText(self, label="Confidence:"), 0, wx.ALIGN_CENTER, 5)
+        row1.AddSpacer(27)
         row1.Add(self.slider1)
 
         self.slider2 = wx.Slider(self, maxValue=100)
@@ -92,11 +95,13 @@ class SettingsPanel(wx.Panel):
         self.width_text = wx.TextCtrl(self, size=wx.Size(80, 22), value="1")
         row3 = wx.BoxSizer(wx.HORIZONTAL)
         row3.Add(wx.StaticText(self, label="Length (m):"), 0, wx.ALIGN_CENTER, 5)
+        row3.AddSpacer(10)
         row3.AddStretchSpacer(10)
         row3.Add(self.length_text)
 
         row4 = wx.BoxSizer(wx.HORIZONTAL)
         row4.Add(wx.StaticText(self, label="Width (m):"), 0, wx.ALIGN_CENTER, 5)
+        row4.AddSpacer(8 + self.GetCharWidth())
         row4.AddStretchSpacer(10)
         row4.Add(self.width_text)
 
@@ -105,14 +110,11 @@ class SettingsPanel(wx.Panel):
         inp_choice = wx.RadioBox(self, choices=["Webcam", "Video File"], majorDimension=1)
         inp_choice.SetSelection(0)
         row5.Add(inp_choice)
-        row5.AddStretchSpacer(10)
+        row5.AddSpacer(10)
+        row5.AddStretchSpacer(30)
         self.file_picker = wx.FilePickerCtrl(self)
         self.file_picker.Enable(False)
         row5.Add(self.file_picker, 0, wx.EXPAND, 5)
-        row5.AddStretchSpacer(10)
-        self.change_but = wx.Button(self, label="Change", id=wx.ID_HIGHEST + 2)
-        self.change_but.Enable(False)
-        row5.Add(self.change_but, 0, wx.ALIGN_CENTER, 5)
 
         v_sizer = wx.BoxSizer(wx.VERTICAL)
         row1.SetSizeHints(self)
@@ -126,7 +128,7 @@ class SettingsPanel(wx.Panel):
         v_sizer.Add(row3, 0, wx.ALL, 10)
         v_sizer.Add(row4, 0, wx.ALL, 10)
         v_sizer.Add(row5, 0, wx.ALL, 10)
-        self.config_but = wx.Button(self, label="Configure", id=wx.ID_HIGHEST + 1)
+        self.config_but = wx.Button(self, label="Configure")
         v_sizer.Add(self.config_but)
         # start_button = wx.Button(self, label="Start")
         # v_sizer.Add(start_button)

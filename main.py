@@ -49,6 +49,7 @@ class MainNotebook(wx.Notebook):
         self.Bind(wx.EVT_BUTTON, self.on_button)
         self.Bind(wx.EVT_SCROLL_CHANGED, self.on_slider_change)
         self.Bind(wx.EVT_RADIOBOX, self.on_inp_change)
+        self.Bind(wx.EVT_FILEPICKER_CHANGED, self.on_file_change)
         self.Bind(wx.EVT_CLOSE, self.on_close)
 
     def on_click(self, e):
@@ -68,14 +69,10 @@ class MainNotebook(wx.Notebook):
         self.img_pane.threshold2 = 2 + self.settings.slider1.GetValue() / 10
 
     def on_button(self, e: wx.EVT_BUTTON):
-        if e.Id == wx.ID_HIGHEST + 1:
-            self.img_pane.dotting = True
-            self.img_pane.configuring = True
-            self.settings.config_but.Enable(False)
-            self.SetSelection(0)
-        elif e.Id == wx.ID_HIGHEST + 2:
-            cap = cv2.VideoCapture(self.settings.file_picker.GetPath())
-            self.img_pane.cap = cap
+        self.img_pane.dotting = True
+        self.img_pane.configuring = True
+        self.settings.config_but.Enable(False)
+        self.SetSelection(0)
 
     def on_close(self, e):
         self.img_pane.on_close(e)
@@ -84,13 +81,18 @@ class MainNotebook(wx.Notebook):
     def on_inp_change(self, e):
         if e.GetSelection():
             self.settings.file_picker.Enable(True)
-            self.settings.change_but.Enable(True)
         else:
             self.settings.file_picker.Enable(False)
-            self.settings.change_but.Enable(False)
+
+    def on_file_change(self, e):
+        cap = cv2.VideoCapture(self.settings.file_picker.GetPath())
+        self.img_pane.cap = cap
 
     def img_factory(self, cap, thres1, thres2):
-        return HumanTracking.display_frame(*HumanTracking.get_boundaries(cap, thres1), self.dots,
+        args = HumanTracking.get_boundaries(cap, thres1)
+        if args is None:
+            return None
+        return HumanTracking.display_frame(*args, self.dots,
                                     float(self.settings.length_text.GetLineText(0)),
                                     float(self.settings.width_text.GetLineText(0)), thres2, 1, 5)
 

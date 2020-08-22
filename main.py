@@ -91,8 +91,8 @@ class MainNotebook(wx.Notebook):
 
     @staticmethod
     def create_img_pane(parent, cap):
-        return UI.image.CV2ImagePanel(parent, lambda a, b: HumanTracking.display_frame(
-            *HumanTracking.get_boundaries(a.read()[1], b)), r"resources/config_mode", cap)
+        return UI.image.CV2ImagePanel(parent, lambda a, b: HumanTracking.display_frame(cap.read()[1],
+            *HumanTracking.get_boundaries(a, b)), r"resources/config_mode", cap)
 
 
 app = wx.App()

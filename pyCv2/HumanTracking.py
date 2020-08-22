@@ -3,11 +3,11 @@ import imutils
 import cv2
 
 def get_boundaries(cap, threshold):
-    net = cv2.dnn.readNetFromCaffe("/Model/MobileNetSSD_deploy.prototxt.txt",
-                                   "/Model/MobileNetSSD_deploy.caffemodel")
+    net = cv2.dnn.readNetFromCaffe("../Model/MobileNetSSD_deploy.prototxt.txt",
+                                   "../Model/MobileNetSSD_deploy.caffemodel")
 
-    ret, innerframe = cap.read()
-    innerframe = imutils.resize(innerframe, width=400)
+    ret, oriframe = cap.read()
+    innerframe = imutils.resize(oriframe, width=400)
 
     (h, w) = innerframe.shape[:2]
     blob = cv2.dnn.blobFromImage(cv2.resize(innerframe, (300, 300)),
@@ -33,10 +33,10 @@ def get_boundaries(cap, threshold):
             if(idx == 15):
                 dimensions.append([startX, startY, endX, endY, confidence])
 
-    return innerframe, dimensions
+    return innerframe, dimensions, oriframe
 
 
-def display_frame(frame, innerframe, dimensions):
+def display_frame(frame, innerframe, dimensions, corners, h, w, minPts, epsilon):
     for dimension in dimensions:
         xScale, yScale = get_ratio(frame, innerframe)
         startX = int(dimension[0] * xScale)
@@ -56,12 +56,11 @@ def display_frame(frame, innerframe, dimensions):
     #Draw circles on frame correctly
     hasDanger = 0
     trc = bottomCentres(frame, innerframe, dimensions)
-    points = np.array([[53, 248], [87, 198], [141, 205], [117, 257]])  # pass 4 points here
-    height, width, hMatrix = transformInfo(points, 5, 5, 500)  # pass width, height where 5, 5 is
+    height, width, hMatrix = transformInfo(corners, h, w, 500)  # pass width, height where 5, 5 is
     newTrc = transformPoints(trc, hMatrix)
     warped = transformedImage(frame, newTrc, 1500, 1500, hMatrix, height, width, trc)
     clusterIndex = [0] * len(trc)
-    dbscan(3, 1, newTrc, height, width, clusterIndex)
+    dbscan(minPts, epsilon, newTrc, height, width, clusterIndex)
     # cv2.imshow("Warped", warped)
     vals = [(0, 0, 255), (0, 0, 0), (255, 0, 0), (255, 255, 0), (0, 255, 255), (255, 255, 255)]
     toIncrement = 0
@@ -74,8 +73,8 @@ def display_frame(frame, innerframe, dimensions):
     else:
         hasDanger = 0
         print("no more AAAA")
-    cv2.imshow("Frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-    if (hasDanger > 6):
+   # cv2.imshow("Frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+    if (hasDanger > 2):
         print("AAAA")
 
     return cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
@@ -175,13 +174,17 @@ def get_ratio(orimage, transimage):
 
 
 if __name__ == "__main__":
-    cap = cv2.VideoCapture("../resources/View_001/frame_%04d.jpg", cv2.CAP_IMAGES)
+    #cap = cv2.VideoCapture("../resources/View_001/frame_%04d.jpg", cv2.CAP_IMAGES)
+    cap = cv2.VideoCapture("../resources/video.avi")
+    points = np.array([[53, 248], [87, 198], [141, 205], [117, 257]])  # pass 4 points here
+    height, width = 5, 5
+    minPts, epsilon = 3, 1
     while True:
-        transimage, dimensions = get_boundaries(cap, 0.1)
-        ret, orimage = cap.read()
+        transimage, dimensions, oriframe = get_boundaries(cap, 0.01)
+        #ret, orimage = cap.read()
 
-        frame = display_frame(orimage, transimage, dimensions)
-
+        frame = display_frame(oriframe, transimage, dimensions, points, height, width, minPts, epsilon)
+        cv2.imshow("frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 

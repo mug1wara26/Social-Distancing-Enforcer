@@ -1,8 +1,6 @@
 import numpy as np
 import imutils
 import cv2
-import os
-
 
 def get_boundaries(cap, threshold):
     net = cv2.dnn.readNetFromCaffe("../Model/MobileNetSSD_deploy.prototxt.txt",
@@ -17,14 +15,8 @@ def get_boundaries(cap, threshold):
     net.setInput(blob)
     detections = net.forward()
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> ad00d7dad57930a35e1eef6d143466113bfa87a6
     dimensions = []
 
->>>>>>> 5c17e0ffca71ba7c115ca3c5de1e8f3e34b50238
     for i in np.arange(0, detections.shape[2]):
         # extract the confidence (i.e., probability) associated with
         # the prediction
@@ -42,16 +34,9 @@ def get_boundaries(cap, threshold):
 
     return innerframe, dimensions
 
-
-<<<<<<< HEAD
-def display_frame(innerframe, dms):
-    #print(dms)
-    for dimension in dms:
-=======
 def display_frame(innerframe, dimensions):
     print(dimensions)
     for dimension in dimensions:
->>>>>>> 5c17e0ffca71ba7c115ca3c5de1e8f3e34b50238
         startX = dimension[0]
         startY = dimension[1]
         endX = dimension[2]

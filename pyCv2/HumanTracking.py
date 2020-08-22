@@ -2,9 +2,9 @@ import numpy as np
 import imutils
 import cv2
 
-def get_boundaries(oriframe, threshold):
-    net = cv2.dnn.readNetFromCaffe("Model/MobileNetSSD_deploy.prototxt.txt",
-                                   "Model/MobileNetSSD_deploy.caffemodel")
+def get_boundaries(cap, threshold):
+    net = cv2.dnn.readNetFromCaffe("/Model/MobileNetSSD_deploy.prototxt.txt",
+                                   "/Model/MobileNetSSD_deploy.caffemodel")
 
     ret, innerframe = cap.read()
     innerframe = imutils.resize(innerframe, width=400)

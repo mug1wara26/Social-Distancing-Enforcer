@@ -5,6 +5,8 @@ import cv2
 import UI.image
 from pyCv2 import HumanTracking
 
+import operator
+
 
 class MainFrame(wx.Frame):
     def __init__(self):
@@ -17,11 +19,7 @@ class MainFrame(wx.Frame):
 
         # os.getcwd() + r"\resources\WalkByShop1cor.mpg"
 
-        self.Bind(wx.EVT_CLOSE, self.on_close)
         self.Bind(wx.EVT_SIZE, self.on_resize)
-
-    def on_close(self, e):
-        self.vid_pane.on_close(e)
 
     def on_resize(self, e):
         self.nb.SetSize(self.GetSize())
@@ -43,18 +41,20 @@ class MainNotebook(wx.Notebook):
         self.Bind(wx.EVT_BUTTON, self.on_config)
         self.Bind(wx.EVT_SCROLL_CHANGED, self.on_slider_change)
         self.Bind(wx.EVT_RADIOBOX, self.on_inp_change)
+        self.Bind(wx.EVT_CLOSE, self.on_close)
 
     def on_click(self, e):
-        if self.img_pane.configuring and len(dots := self.get_dots()) == 4:
+        if self.img_pane.configuring and len(dots := self.img_pane.get_dots()) == 4:
             wx.CallLater(500, self.after_dot_config)
             print(list(map(operator.methodcaller("Get"), dots)))  # use for dis estim
             print(self.settings.length_text.GetLineText(0), self.settings.width_text.GetLineText(0))
+            print(self.img_pane.get_dots())
         e.Skip()
 
     def after_dot_config(self):
         self.img_pane.dotting = False
         self.img_pane.configuring = False
-        self.clear_dots()
+        self.img_paneclear_dots()
         self.settings.config_but.Enable(True)
 
     def on_slider_change(self, e):
@@ -64,6 +64,9 @@ class MainNotebook(wx.Notebook):
         self.img_pane.dotting = True
         self.img_pane.configuring = True
         self.settings.config_but.Enable(False)
+
+    def on_close(self, e):
+        self.img_pane.on_close(e)
 
     def on_inp_change(self, e):
         self.img_pane.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)

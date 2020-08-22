@@ -33,6 +33,7 @@ class CV2ImagePanel(wx.Panel):
 
         self.Bind(wx.EVT_LEFT_DOWN, self.on_click)
         self.Bind(wx.EVT_SIZE, self.on_resize)
+        self.Bind(wx.EVT_CLOSE, self.on_close)
 
         self.settings = None
 
@@ -41,6 +42,13 @@ class CV2ImagePanel(wx.Panel):
             self.dots.append(e.GetPosition())
             e.ResumePropagation(1)
             e.Skip()
+
+    def on_close(self, e):
+        self.timer.Stop()
+        self.cap.release()
+        self.Close()
+        e.Skip()
+
 
     def on_resize(self, e):
         self.bmp = wx.Bitmap(self.bmp.ConvertToImage().Scale(*self.GetSize()))
@@ -102,11 +110,3 @@ class SettingsPanel(wx.Panel):
         v_sizer.Add(row2)
 
         self.SetSizerAndFit(v_sizer)
-
-        self.Bind(wx.EVT_CLOSE, self.on_close)
-
-    def on_close(self, e):
-        self.img_pane.timer.Stop()
-        self.img_pane.cap.release()
-        self.img_pane.Close()
-        e.Skip()

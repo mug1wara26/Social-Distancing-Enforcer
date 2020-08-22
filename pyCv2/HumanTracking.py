@@ -2,16 +2,17 @@ import numpy as np
 import imutils
 import cv2
 
-def get_boundaries(oriframe, threshold):
+def get_boundaries(cap, threshold):
     net = cv2.dnn.readNetFromCaffe("../Model/MobileNetSSD_deploy.prototxt.txt",
                                    "../Model/MobileNetSSD_deploy.caffemodel")
 
-    #ret, innerframe = cap.read()
-    innerframe = imutils.resize(oriframe, width=400)
+    ret, innerframe = cap.read()
+    innerframe = imutils.resize(innerframe, width=400)
 
     (h, w) = innerframe.shape[:2]
     blob = cv2.dnn.blobFromImage(cv2.resize(innerframe, (300, 300)),
                                  0.007843, (300, 300), 127.5)
+
     net.setInput(blob)
     detections = net.forward()
 
@@ -34,25 +35,51 @@ def get_boundaries(oriframe, threshold):
 
     return innerframe, dimensions
 
-def display_frame(innerframe, dimensions):
-    #print(dimensions)
+
+def display_frame(frame, innerframe, dimensions):
     for dimension in dimensions:
-        startX = dimension[0]
-        startY = dimension[1]
-        endX = dimension[2]
-        endY = dimension[3]
+        x, y = get_ratio(frame, innerframe)
+        startX = int(dimension[0] * x)
+        startY = int(dimension[1] * y)
+        endX = int(dimension[2] * x)
+        endY = int(dimension[3] * y)
         confidence = dimension[4]
 
-        cv2.rectangle(innerframe, (startX*2, startY*2), (endX*2, endY*2),
-                      (0, 255, 0), 2)
+        cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 2)
         y = startY - 15 if startY - 15 > 15 else startY + 15
         # draw the prediction on the frame
         label = "{}: {:.2f}%".format("Person",
                                      confidence * 100)
-        cv2.putText(innerframe, label, (startX*2, y*2),
+        cv2.putText(frame, label, (startX, y),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-    return cv2.cvtColor(innerframe, cv2.COLOR_RGB2BGR)
+        #Draw circles on frame correctly
+        hasDanger = 0
+        trc = bottomCentres(dimensions)
+        points = np.array([[53, 248], [87, 198], [141, 205], [117, 257]])  # pass 4 points here
+        height, width, hMatrix = transformInfo(points, 5, 5, 500)  # pass width, height where 5, 5 is
+        newTrc = transformPoints(trc, hMatrix)
+        warped = transformedImage(frame, newTrc, 1500, 1500, hMatrix, height, width, trc)
+        clusterIndex = [0] * len(trc)
+        dbscan(3, 1, newTrc, height, width, clusterIndex)
+        # cv2.imshow("Warped", warped)
+        vals = [(0, 0, 255), (0, 0, 0), (255, 0, 0), (255, 255, 0), (0, 255, 255), (255, 255, 255)]
+        toIncrement = 0
+        for i in range(len(clusterIndex)):
+            if (clusterIndex.count(clusterIndex[i]) >= 2 and clusterIndex[i] != -1):
+                toIncrement += 1
+            cv2.circle(frame, (int(trc[i][0] * x), int(trc[i][1] * y)), radius=3, color=vals[clusterIndex[i]], thickness=-1)
+        if (toIncrement != 0):
+            hasDanger += toIncrement
+        else:
+            hasDanger = 0
+            print("no more AAAA")
+        cv2.imshow("Frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        if (hasDanger > 6):
+            print("AAAA")
+
+    return cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+
 
 def transformInfo(corners, knownHeight, knownWidth, offset):
     # offset is meant for coordinates on the warped image
@@ -75,19 +102,23 @@ def transformInfo(corners, knownHeight, knownWidth, offset):
     hMatrix, M = cv2.findHomography(corners, dst)
     return knownHeight/maxHeight, knownWidth/maxWidth, hMatrix
 
+
 def bottomCentres(points):
     bc = []
     for p in points:
         bc.append((2*int((p[0]+p[2])/2),2*int(p[3])))
     return bc
 
+
 def transformPoints(points, hMatrix):
     if(len(points) == 0):
         return np.array([])
     return cv2.perspectiveTransform(np.float32(points).reshape(-1, 1, 2), hMatrix)
 
+
 def getDistance(a, b, h, w):
     return np.sqrt(((a[0][0] - b[0][0]) * w) ** 2 + ((a[0][1] -b[0][1])*h) ** 2)
+
 
 def dbscan(epsilon, minPts, points, height, width, clusterIndex):
     cluster = 0
@@ -121,6 +152,7 @@ def dbscan(epsilon, minPts, points, height, width, clusterIndex):
             if(len(newNeighbours) >= minPts):
                 neighbours += newNeighbours
 
+
 def transformedImage(image, points, x, y, hMatrix, height, width, originalPoints):
     warped = cv2.warpPerspective(image, hMatrix, (x, y))
     for i in range(len(points)):
@@ -133,35 +165,22 @@ def transformedImage(image, points, x, y, hMatrix, height, width, originalPoints
 
     return warped
 
+
+def get_ratio(orimage, transimage):
+    h1, w1, _ = transimage.shape
+    h2, w2, _ = orimage.shape
+
+    return w2 / w1, h2 / h1
+
+
 if __name__ == "__main__":
     cap = cv2.VideoCapture("../resources/View_001/frame_%04d.jpg", cv2.CAP_IMAGES)
-    hasDanger = 0
     while True:
-        ret, oriframe = cap.read()
-        innerframe, dimensions = get_boundaries(oriframe, 0.1)
-        trc = bottomCentres(dimensions)
-        frame = display_frame(oriframe, dimensions)
-        points = np.array([[53, 248], [87, 198], [141, 205], [117, 257]]) #pass 4 points here
-        height, width, hMatrix = transformInfo(points, 5, 5, 500) #pass width, height where 5, 5 is
-        newTrc = transformPoints(trc, hMatrix)
-        warped = transformedImage(frame, newTrc, 1500, 1500, hMatrix, height, width, trc)
-        clusterIndex = [0] * len(trc)
-        dbscan(3, 1, newTrc, height, width, clusterIndex)
-        #cv2.imshow("Warped", warped)
-        vals = [(0, 0, 255), (0, 0, 0), (255, 0, 0), (255, 255, 0), (0, 255, 255), (255, 255, 255)]
-        toIncrement = 0
-        for i in range(len(clusterIndex)):
-            if(clusterIndex.count(clusterIndex[i]) >= 2 and clusterIndex[i] != -1):
-                toIncrement += 1
-            cv2.circle(frame, (trc[i][0], trc[i][1]), radius=3, color=vals[clusterIndex[i]], thickness=-1)
-        if(toIncrement != 0):
-            hasDanger += toIncrement
-        else:
-            hasDanger = 0
-            print("no more AAAA")
-        cv2.imshow("Frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        if(hasDanger > 6):
-            print("AAAA")
+        transimage, dimensions = get_boundaries(cap, 0.1)
+        ret, orimage = cap.read()
+
+        frame = display_frame(orimage, transimage, dimensions)
+
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 

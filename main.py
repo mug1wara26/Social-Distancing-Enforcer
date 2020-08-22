@@ -58,7 +58,6 @@ class MainNotebook(wx.Notebook):
             wx.CallLater(500, self.after_dot_config)
             self.dots = list(map(np.array, map(operator.methodcaller("Get"), dots)))
             print(self.dots)
-            self.call_transform_info()
         e.Skip()
 
     def call_transform_info(self, e=None):

@@ -93,4 +93,3 @@ class MainNotebook(wx.Notebook):
 app = wx.App()
 MainFrame().Show()
 app.MainLoop()
-7

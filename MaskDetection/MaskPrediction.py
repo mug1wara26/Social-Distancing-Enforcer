@@ -25,8 +25,12 @@ def predict_values(frame, faceCascade, model):
         if len(faces_list)>0:
             preds = model.predict(faces_list)
         for (mask, noMask) in preds:
-            label = "Mask" if mask > noMask else "No Mask"
-            color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
+            if mask > noMask:
+                label = "Mask"
+                color = (0, 255, 0)
+            else:
+                label = "No Mask"
+                color = (0, 0, 255)
             label = "{}: {:.2f}%".format(label, max(mask, noMask) * 100)
             cv2.putText(frame, label, (x, y - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)

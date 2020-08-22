@@ -30,6 +30,8 @@ def get_boundaries(cap, threshold):
                                        "Model/MobileNetSSD_deploy.caffemodel")
 
     ret, oriframe = cap.read()
+    if not ret:
+        return
     innerframe = imutils.resize(oriframe, width=400)
 
     (h, w) = innerframe.shape[:2]
@@ -99,7 +101,7 @@ def display_frame(frame, innerframe, dimensions, corners, h, w, minPts, epsilon,
         hasDanger = 0
         #print("no more AAAA")
    # cv2.imshow("Frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-    if (hasDanger > threshold):
+    if (hasDanger >= threshold):
         print("Failures detected!")
         #os.chdir("../Detection/")
         cv2.imwrite("./" + datetime.now().strftime("%m/%d/%Y,%H:%M:%S") + ".jpg", frame)
@@ -210,12 +212,12 @@ if __name__ == "__main__":
     points = np.array([[53, 248], [87, 198], [141, 205], [117, 257]])  # pass 4 points here
     height, width = 5, 5
     minPts, epsilon = 3, 1
-    threshold = 2
+    #threshold = 2
     while True:
-        transimage, dimensions, oriframe = get_boundaries(cap, 0.01)
+        oriframe, transimage, dimensions = get_boundaries(cap, 0.01)
         #ret, orimage = cap.read()
 
-        frame = display_frame(oriframe, transimage, dimensions, points, height, width, minPts, epsilon, threshold)
+        frame = display_frame(oriframe, transimage, dimensions, points, height, width, 2, epsilon, minPts)
         for p in right_clicks:
             cv2.circle(frame, (p[0], p[1]), radius=3, color=(255, 255, 255), thickness=-1);
         cv2.imshow("frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))

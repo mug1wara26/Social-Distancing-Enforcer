@@ -46,10 +46,10 @@ class MainNotebook(wx.Notebook):
         self.AddPage(self.settings, "Settings")
 
         self.Bind(wx.EVT_LEFT_DOWN, self.on_click)
-        self.Bind(wx.EVT_BUTTON, self.on_config)
+        self.Bind(wx.EVT_BUTTON, self.on_button)
         self.Bind(wx.EVT_SCROLL_CHANGED, self.on_slider_change)
         self.Bind(wx.EVT_RADIOBOX, self.on_inp_change)
-        self.Bind(wx.EVT_FILEPICKER_CHANGED, self.on_inp_change)
+        self.Bind(wx.EVT_FILEPICKER_CHANGED, self.on_file_change)
         self.Bind(wx.EVT_CLOSE, self.on_close)
 
     def on_click(self, e):
@@ -68,7 +68,7 @@ class MainNotebook(wx.Notebook):
         self.img_pane.threshold1 = self.settings.slider1.GetValue() / 100
         self.img_pane.threshold2 = 2 + self.settings.slider1.GetValue() / 10
 
-    def on_config(self, e):
+    def on_button(self, e: wx.EVT_BUTTON):
         self.img_pane.dotting = True
         self.img_pane.configuring = True
         self.settings.config_but.Enable(False)
@@ -84,8 +84,15 @@ class MainNotebook(wx.Notebook):
         else:
             self.settings.file_picker.Enable(False)
 
+    def on_file_change(self, e):
+        cap = cv2.VideoCapture(self.settings.file_picker.GetPath())
+        self.img_pane.cap = cap
+
     def img_factory(self, cap, thres1, thres2):
-        return HumanTracking.display_frame(*HumanTracking.get_boundaries(cap, thres1), self.dots,
+        args = HumanTracking.get_boundaries(cap, thres1)
+        if args is None:
+            return None
+        return HumanTracking.display_frame(*args, self.dots,
                                     float(self.settings.length_text.GetLineText(0)),
                                     float(self.settings.width_text.GetLineText(0)), thres2, 1, 5)
 
@@ -93,4 +100,3 @@ class MainNotebook(wx.Notebook):
 app = wx.App()
 MainFrame().Show()
 app.MainLoop()
-7

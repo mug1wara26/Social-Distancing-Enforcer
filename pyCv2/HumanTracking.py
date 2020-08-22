@@ -5,8 +5,8 @@ import os
 
 
 def get_boundaries(cap, threshold):
-    net = cv2.dnn.readNetFromCaffe("../Model/MobileNetSSD_deploy.prototxt.txt",
-                                   "../Model/MobileNetSSD_deploy.caffemodel")
+    net = cv2.dnn.readNetFromCaffe(os.getcwd() + "/Model/MobileNetSSD_deploy.prototxt.txt",
+                                   os.getcwd() + "/Model/MobileNetSSD_deploy.caffemodel")
 
     ret, innerframe = cap.read()
     innerframe = imutils.resize(innerframe, width=400)
@@ -14,10 +14,11 @@ def get_boundaries(cap, threshold):
     (h, w) = innerframe.shape[:2]
     blob = cv2.dnn.blobFromImage(cv2.resize(innerframe, (300, 300)),
                                  0.007843, (300, 300), 127.5)
+
     net.setInput(blob)
     detections = net.forward()
 
-    dimensions = []
+    dimensions = [[None, None, None, None, None]]
 
     for i in np.arange(0, detections.shape[2]):
         # extract the confidence (i.e., probability) associated with
@@ -30,16 +31,13 @@ def get_boundaries(cap, threshold):
             # the bounding box for the object
             box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
             (startX, startY, endX, endY) = box.astype("int")
-            idx = int(detections[0, 0, i, 1])
-            if(idx == 15):
-                dimensions.append([startX, startY, endX, endY, confidence])
 
+            dimensions.append([startX, startY, endX, endY, confidence])
     return innerframe, dimensions
 
 
-def display_frame(innerframe, dms):
-    #print(dms)
-    for dimension in dms:
+def display_frame(innerframe, dimensions):
+    for dimension in dimensions:
         startX = dimension[0]
         startY = dimension[1]
         endX = dimension[2]
@@ -59,11 +57,12 @@ def display_frame(innerframe, dms):
 
 
 if __name__ == "__main__":
-    cap = cv2.VideoCapture("../resources/OneLeaveShop1front.mpg")
+    cap = cv2.VideoCapture(0)
 
     while True:
         innerframe, dimensions = get_boundaries(cap, 0.7)
         frame = display_frame(innerframe, dimensions)
+
         cv2.imshow("Frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
 
         if cv2.waitKey(1) & 0xFF == ord('q'):

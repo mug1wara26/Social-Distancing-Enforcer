@@ -58,7 +58,6 @@ class MainNotebook(wx.Notebook):
             wx.CallLater(500, self.after_dot_config)
             self.dots = list(map(np.array, map(operator.methodcaller("Get"), dots)))
             print(self.dots)
-            self.call_transform_info()
         e.Skip()
 
     def call_transform_info(self, e=None):
@@ -85,6 +84,7 @@ class MainNotebook(wx.Notebook):
         e.Skip()
 
     def on_inp_change(self, e):
+        print("Filepath: ", self.settings.file_picker.GetPath())
         if e.GetSelection() and not self.settings.file_picker.GetPath():
             self.img_pane = self.create_img_pane(self, cv2.VideoCapture(self.settings.file_picker.GetPath()))
         else:
@@ -92,8 +92,8 @@ class MainNotebook(wx.Notebook):
 
     @staticmethod
     def create_img_pane(parent, cap):
-        return UI.image.CV2ImagePanel(parent, lambda a, b: HumanTracking.display_frame(
-            *HumanTracking.get_boundaries(a.read()[1], b)), r"resources/config_mode", cap)
+        return UI.image.CV2ImagePanel(parent, lambda a, b: HumanTracking.display_frame(cap.read()[1],
+            *HumanTracking.get_boundaries(a, b)), r"resources/config_mode", cap)
 
 
 app = wx.App()

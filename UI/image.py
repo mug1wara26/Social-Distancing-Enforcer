@@ -1,9 +1,11 @@
 import wx
 import cv2
 
+import operator
+
 
 class CV2ImagePanel(wx.Panel):
-    def __init__(self, parent, image_factory, cap, config_png_name, fps=15):
+    def __init__(self, parent, image_factory, config_png_name, cap, fps=15):
         super().__init__(parent)
         config_img_bitmap = wx.Bitmap(wx.Image(config_png_name + ".png", wx.BITMAP_TYPE_ANY).Scale(200, 30))
         self.config_img_dims = config_img_bitmap.GetSize()
@@ -32,6 +34,8 @@ class CV2ImagePanel(wx.Panel):
         self.Bind(wx.EVT_LEFT_DOWN, self.on_click)
         self.Bind(wx.EVT_SIZE, self.on_resize)
 
+        self.settings = None
+
     def on_click(self, e):
         if self.dotting:
             self.dots.append(e.GetPosition())
@@ -40,7 +44,6 @@ class CV2ImagePanel(wx.Panel):
 
     def on_resize(self, e):
         self.bmp = wx.Bitmap(self.bmp.ConvertToImage().Scale(*self.GetSize()))
-        e.Skip()  # might change in future in attempt to allow window resize
 
     def on_paint(self, e):
         dc = wx.BufferedPaintDC(self, self.bmp)
@@ -56,7 +59,7 @@ class CV2ImagePanel(wx.Panel):
 
     def next_frame(self, e):
         frame = self.image_factory(self.cap, self.threshold)
-        self.bmp.CopyFromBuffer(frame)
+        self.bmp = wx.Bitmap.FromBuffer(640, 360, cv2.resize(frame, (640, 360)))
         self.Refresh()
 
     def get_dots(self):
@@ -64,3 +67,46 @@ class CV2ImagePanel(wx.Panel):
 
     def clear_dots(self):
         self.dots = []
+
+
+class SettingsPanel(wx.Panel):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self.slider = wx.Slider(self, maxValue=100)
+        row1 = wx.BoxSizer(wx.HORIZONTAL)
+        row1.Add(wx.StaticText(self, label="Confidence:"), 0, wx.ALIGN_CENTER, 5)
+        row1.Add(self.slider)
+        row1.AddStretchSpacer(20)
+
+        self.config_but = wx.Button(self, label="Configure")
+        self.length_text = wx.TextCtrl(self, size=wx.Size(80, 22))
+        self.width_text = wx.TextCtrl(self, size=wx.Size(80, 22))
+        row1.Add(self.config_but)
+        row1.AddStretchSpacer(15)
+        row1.Add(wx.StaticText(self, label="Length (m):"), 0, wx.ALIGN_CENTER, 5)
+        row1.AddStretchSpacer(10)
+        row1.Add(self.length_text)
+        row1.AddStretchSpacer(10)
+        row1.Add(wx.StaticText(self, label="Width (m):"), 0, wx.ALIGN_CENTER, 5)
+        row1.AddStretchSpacer(10)
+        row1.Add(self.width_text)
+
+        row2 = wx.BoxSizer(wx.HORIZONTAL)
+        inp_choice = wx.RadioBox(self, choices=["Webcam", "Video File"], majorDimension=1)
+        inp_choice.SetSelection(0)
+        row2.Add(inp_choice)
+
+        v_sizer = wx.BoxSizer(wx.VERTICAL)
+        v_sizer.Add(row1)
+        v_sizer.Add(row2)
+
+        self.SetSizerAndFit(v_sizer)
+
+        self.Bind(wx.EVT_CLOSE, self.on_close)
+
+    def on_close(self, e):
+        self.img_pane.timer.Stop()
+        self.img_pane.cap.release()
+        self.img_pane.Close()
+        e.Skip()

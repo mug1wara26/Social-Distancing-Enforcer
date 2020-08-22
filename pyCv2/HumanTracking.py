@@ -1,8 +1,6 @@
 import numpy as np
 import imutils
 import cv2
-import os
-
 
 def get_boundaries(cap, threshold):
     net = cv2.dnn.readNetFromCaffe("/Model/MobileNetSSD_deploy.prototxt.txt",
@@ -35,7 +33,6 @@ def get_boundaries(cap, threshold):
                 dimensions.append([startX, startY, endX, endY, confidence])
 
     return innerframe, dimensions
-
 
 
 def display_frame(innerframe, dimensions):

@@ -46,7 +46,7 @@ if __name__ == "__main__":
     while True:
         ret, frame = cap.read()
 
-        cv2.imshow('frame', predict_values(frame, face_cascade, mask_model))
+        cv2.imshow('Mask Prediction', predict_values(frame, face_cascade, mask_model))
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

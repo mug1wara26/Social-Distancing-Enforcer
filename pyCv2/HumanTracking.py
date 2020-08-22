@@ -220,11 +220,13 @@ if __name__ == "__main__":
         frame = display_frame(oriframe, transimage, dimensions, points, height, width, 2, epsilon, minPts)
         for p in right_clicks:
             cv2.circle(frame, (p[0], p[1]), radius=3, color=(255, 255, 255), thickness=-1);
-        cv2.imshow("frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        cv2.setMouseCallback("frame", mouse_callback, frame)
+        cv2.imshow("Social Distancing Enforcer", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        cv2.setMouseCallback("Social Distancing Enforcer", mouse_callback, frame)
 
         if(len(right_clicks) == 4):
             points = np.array(right_clicks)
+
+        #cv2.imshow("Social Distancing Enforcer", cap.read()[1])
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

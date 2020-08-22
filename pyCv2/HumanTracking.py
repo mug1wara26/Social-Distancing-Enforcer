@@ -3,8 +3,12 @@ import imutils
 import cv2
 
 def get_boundaries(cap, threshold):
-    net = cv2.dnn.readNetFromCaffe("../Model/MobileNetSSD_deploy.prototxt.txt",
+    if __name__ == "__main__":
+        net = cv2.dnn.readNetFromCaffe("../Model/MobileNetSSD_deploy.prototxt.txt",
                                    "../Model/MobileNetSSD_deploy.caffemodel")
+    else:
+        net = cv2.dnn.readNetFromCaffe("Model/MobileNetSSD_deploy.prototxt.txt",
+                                       "Model/MobileNetSSD_deploy.caffemodel")
 
     ret, oriframe = cap.read()
     innerframe = imutils.resize(oriframe, width=400)
@@ -33,7 +37,7 @@ def get_boundaries(cap, threshold):
             if(idx == 15):
                 dimensions.append([startX, startY, endX, endY, confidence])
 
-    return innerframe, dimensions, oriframe
+    return oriframe, innerframe, dimensions
 
 
 def display_frame(frame, innerframe, dimensions, corners, h, w, minPts, epsilon):

@@ -19,7 +19,7 @@ class CV2ImagePanel(wx.Panel):
         self.configuring = False
 
         # init the first frame
-        frame = self.image_factory(self.cap, self.threshold)
+        frame = self.image_factory(self.cap, self.threshold, 2)
         dims = tuple(reversed(frame.shape[:2]))
         self.SetSizeHints(*dims)
         self.bmp = wx.Bitmap.FromBuffer(*dims, frame)
@@ -66,7 +66,7 @@ class CV2ImagePanel(wx.Panel):
                 dc.DrawLine(self.dots[0], self.dots[3])
 
     def next_frame(self, e):
-        frame = self.image_factory(self.cap, self.threshold)
+        frame = self.image_factory(self.cap, self.threshold, 2)
         self.bmp = wx.Bitmap.FromBuffer(640, 360, cv2.resize(frame, (640, 360)))
         self.Refresh()
 
@@ -83,7 +83,7 @@ class SettingsPanel(wx.Panel):
 
         self.slider = wx.Slider(self, maxValue=100)
         row1 = wx.BoxSizer(wx.HORIZONTAL)
-        row1.Add(wx.StaticText(self, label="Confidence:"), 0, wx.ALIGN_CENTER, 5)
+        row1.Add(wx.StaticText(self, label="Minimum Point:"), 0, wx.ALIGN_CENTER, 5)
         row1.Add(self.slider)
         row1.AddStretchSpacer(20)
         self.config_but = wx.Button(self, label="Configure")

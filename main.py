@@ -35,12 +35,12 @@ class MainFrame(wx.Frame):
 class MainNotebook(wx.Notebook):
     def __init__(self, parent):
         super().__init__(parent)
-        self.dots = None
+        self.dots = [np.array(0, 0)] * 4
 
         cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
-        self.img_pane = self.create_img_pane(self, cap)
         self.settings = UI.image.SettingsPanel(self)
+        self.img_pane = UI.image.CV2ImagePanel(parent, self.img_factory, r"resources/config_mode", cap)
 
         self.AddPage(self.img_pane, "Video")
         self.AddPage(self.settings, "Settings")
@@ -58,10 +58,6 @@ class MainNotebook(wx.Notebook):
             self.dots = list(map(np.array, map(operator.methodcaller("Get"), dots)))
             print(self.dots)
         e.Skip()
-
-    def call_transform_info(self, e=None):
-        HumanTracking.transformInfo(self.dots, int(self.settings.length_text.GetLineText(0)),
-                                    int(self.settings.width_text.GetLineText(0)), 500)
 
     def after_dot_config(self):
         self.img_pane.dotting = False
@@ -89,10 +85,10 @@ class MainNotebook(wx.Notebook):
         else:
             self.img_pane = self.create_img_pane(self, cv2.VideoCapture(0, cv2.CAP_DSHOW))
 
-    @staticmethod
-    def create_img_pane(parent, cap):
-        return UI.image.CV2ImagePanel(parent, lambda a, b: HumanTracking.display_frame(cap.read()[1],
-            *HumanTracking.get_boundaries(a, b)), r"resources/config_mode", cap)
+    def img_factory(self, cap, thres1, thres2):
+        return HumanTracking.display_frame(*HumanTracking.get_boundaries(cap, thres1), self.dots,
+                                    int(self.settings.length_text.GetLineText(0)),
+                                    int(self.settings.width_text.GetLineText(0)), thres2, 1)
 
 
 app = wx.App()

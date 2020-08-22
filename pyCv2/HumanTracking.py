@@ -14,12 +14,14 @@ def get_boundaries(cap, threshold):
     (h, w) = innerframe.shape[:2]
     blob = cv2.dnn.blobFromImage(cv2.resize(innerframe, (300, 300)),
                                  0.007843, (300, 300), 127.5)
-
     net.setInput(blob)
     detections = net.forward()
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> ad00d7dad57930a35e1eef6d143466113bfa87a6
     dimensions = []
 
 >>>>>>> 5c17e0ffca71ba7c115ca3c5de1e8f3e34b50238
@@ -34,14 +36,22 @@ def get_boundaries(cap, threshold):
             # the bounding box for the object
             box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
             (startX, startY, endX, endY) = box.astype("int")
+            idx = int(detections[0, 0, i, 1])
+            if(idx == 15):
+                dimensions.append([startX, startY, endX, endY, confidence])
 
-            dimensions.append([startX, startY, endX, endY, confidence])
     return innerframe, dimensions
 
 
+<<<<<<< HEAD
+def display_frame(innerframe, dms):
+    #print(dms)
+    for dimension in dms:
+=======
 def display_frame(innerframe, dimensions):
     print(dimensions)
     for dimension in dimensions:
+>>>>>>> 5c17e0ffca71ba7c115ca3c5de1e8f3e34b50238
         startX = dimension[0]
         startY = dimension[1]
         endX = dimension[2]
@@ -61,12 +71,11 @@ def display_frame(innerframe, dimensions):
 
 
 if __name__ == "__main__":
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture("../resources/OneLeaveShop1front.mpg")
 
     while True:
         innerframe, dimensions = get_boundaries(cap, 0.7)
         frame = display_frame(innerframe, dimensions)
-
         cv2.imshow("Frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
 
         if cv2.waitKey(1) & 0xFF == ord('q'):

@@ -1,8 +1,25 @@
+import os
 from datetime import datetime
 
 import numpy as np
 import imutils
 import cv2
+
+
+
+right_clicks = list()
+
+def mouse_callback(event, x, y, flags, params):
+    # right-click event value is 2
+    if event == 2:
+        global right_clicks
+        if len(right_clicks) != 4:
+
+            # store the coordinates of the right-click event
+            right_clicks.append([x, y])
+            print(right_clicks)
+
+
 
 def get_boundaries(cap, threshold):
     if __name__ == "__main__":
@@ -74,7 +91,7 @@ def display_frame(frame, innerframe, dimensions, corners, h, w, minPts, epsilon,
     toIncrement = 0
     for i in range(len(clusterIndex)):
         if (clusterIndex.count(clusterIndex[i]) >= 2 and clusterIndex[i] != -1):
-            toIncrement += 1
+            toIncrement = max(clusterIndex.count(clusterIndex[i]), toIncrement)
         cv2.circle(frame, (trc[i][0], trc[i][1]), radius=3, color=vals[clusterIndex[i]], thickness=-1)
     if (toIncrement != 0):
         hasDanger += toIncrement
@@ -84,7 +101,8 @@ def display_frame(frame, innerframe, dimensions, corners, h, w, minPts, epsilon,
    # cv2.imshow("Frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
     if (hasDanger > threshold):
         print("Failures detected!")
-        cv2.imwrite("../Detection/" + datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ".png", copyOf)
+        #os.chdir("../Detection/")
+        cv2.imwrite("./" + datetime.now().strftime("%m/%d/%Y,%H:%M:%S") + ".jpg", frame)
 
     return cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
@@ -169,8 +187,11 @@ def transformedImage(image, points, x, y, hMatrix, height, width, originalPoints
         for j in range(len(points)):
             #print(np.sqrt(((points[i][0][0] - points[j][0][0]) * width) ** 2 + ((points[i][0][1] - points[j][0][0])*height) ** 2))
             #print(abs(points[i][0][0] - points[j][0][0]) * width)
+            if(i == j):
+                continue
             if(3  > getDistance(points[i], points[j], height, width)):#np.sqrt(((points[i][0][0] - points[j][0][0]) * width) ** 2 + ((points[i][0][1] - points[j][0][1])*height) ** 2)):
-                cv2.line(image, (originalPoints[i][0], originalPoints[i][1]), (originalPoints[j][0], originalPoints[j][1]), (0, 0, 0), thickness=3)
+                cv2.line(image, (originalPoints[i][0], originalPoints[i][1]), (originalPoints[j][0], originalPoints[j][1]), (0, 0, 255), thickness=3)
+                cv2.putText(image, str(getDistance(points[i], points[j], height, width)) + " metres", (int((originalPoints[i][0]+originalPoints[j][0])/2), int((originalPoints[i][1]+ originalPoints[j][1])/2)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
     return warped
 
@@ -183,20 +204,31 @@ def get_ratio(orimage, transimage):
 
 
 if __name__ == "__main__":
-    #cap = cv2.VideoCapture("../resources/View_001/frame_%04d.jpg", cv2.CAP_IMAGES)
-    cap = cv2.VideoCapture("../resources/video.avi")
+    #global right_clicks
+    cap = cv2.VideoCapture("../resources/View_001/frame_%04d.jpg", cv2.CAP_IMAGES)
+    #cap = cv2.VideoCapture("../resources/video.avi")
     points = np.array([[53, 248], [87, 198], [141, 205], [117, 257]])  # pass 4 points here
     height, width = 5, 5
     minPts, epsilon = 3, 1
-    threshold = 5
+    threshold = 2
     while True:
         transimage, dimensions, oriframe = get_boundaries(cap, 0.01)
         #ret, orimage = cap.read()
 
         frame = display_frame(oriframe, transimage, dimensions, points, height, width, minPts, epsilon, threshold)
+        for p in right_clicks:
+            cv2.circle(frame, (p[0], p[1]), radius=3, color=(255, 255, 255), thickness=-1);
         cv2.imshow("frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        cv2.setMouseCallback("frame", mouse_callback, frame)
+
+        if(len(right_clicks) == 4):
+            points = np.array(right_clicks)
+
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+
+        if cv2.waitKey(1) & 0xFF == ord('r'):
+            right_clicks.clear()
 
     # When everything done, release the capture
     cap.release()

@@ -9,7 +9,7 @@ def predict_values(frame, faceCascade, model):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     faces = faceCascade.detectMultiScale(gray,
                                          scaleFactor=1.1,
-                                         minNeighbors=5,
+                                         minNeighbors=4,
                                          minSize=(60, 60),
                                          flags=cv2.CASCADE_SCALE_IMAGE)
     faces_list=[]
@@ -24,8 +24,15 @@ def predict_values(frame, faceCascade, model):
         faces_list.append(face_frame)
         if len(faces_list)>0:
             preds = model.predict(faces_list)
+        for (mask, noMask) in preds:
+            label = "Mask" if mask > noMask else "No Mask"
+            color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
+            label = "{}: {:.2f}%".format(label, max(mask, noMask) * 100)
+            cv2.putText(frame, label, (x, y - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
 
-    return preds
+            cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
+    return frame
 
 
 if __name__ == "__main__":
@@ -35,13 +42,7 @@ if __name__ == "__main__":
     while True:
         ret, frame = cap.read()
 
-        cv2.imshow('frame', frame)
-
-        for (mask, noMask) in predict_values(frame, face_cascade, mask_model):
-            if mask > noMask:
-                print("Wearing Mask")
-            else:
-                print("Not Wearing Mask")
+        cv2.imshow('frame', predict_values(frame, face_cascade, mask_model))
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

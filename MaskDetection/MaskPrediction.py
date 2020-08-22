@@ -20,7 +20,7 @@ def predict_values(frame, faceCascade, model):
         face_frame = cv2.resize(face_frame, (224, 224))
         face_frame = img_to_array(face_frame)
         face_frame = np.expand_dims(face_frame, axis=0)
-        face_frame =  preprocess_input(face_frame)
+        face_frame = preprocess_input(face_frame)
         faces_list.append(face_frame)
         if len(faces_list)>0:
             preds = model.predict(faces_list)
@@ -30,14 +30,18 @@ def predict_values(frame, faceCascade, model):
 
 if __name__ == "__main__":
     cap = cv2.VideoCapture(0)
-
-    mask_model = load_model("../Model/mask_recog_ver2 (1).h5")
+    face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_alt2.xml")
+    mask_model = load_model("mask_recog_ver2 (1).h5")
     while True:
         ret, frame = cap.read()
 
         cv2.imshow('frame', frame)
 
-        print(predict_values(frame, face_cascade, mask_model))
+        for (mask, noMask) in predict_values(frame, face_cascade, mask_model):
+            if mask > noMask:
+                print("Wearing Mask")
+            else:
+                print("Not Wearing Mask")
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

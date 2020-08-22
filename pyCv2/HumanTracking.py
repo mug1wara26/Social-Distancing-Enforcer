@@ -86,7 +86,6 @@ def display_frame(frame, innerframe, dimensions, corners, h, w, minPts, epsilon,
         print("Failures detected!")
         cv2.imwrite("../Detection/" + datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ".png", copyOf)
 
-
     return cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
 

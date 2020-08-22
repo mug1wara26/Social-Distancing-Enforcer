@@ -35,7 +35,7 @@ class MainFrame(wx.Frame):
 class MainNotebook(wx.Notebook):
     def __init__(self, parent):
         super().__init__(parent)
-        self.dots = np.array((np.array((1, 1)), np.array((1, 2)), np.array((2, 1)), np.array((2, 2))))
+        self.dots = np.array((np.array((0, 0)), np.array((20, 0)), np.array((0, 20)), np.array((20, 20))))
 
         cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
@@ -55,8 +55,7 @@ class MainNotebook(wx.Notebook):
     def on_click(self, e):
         if self.img_pane.configuring and len(dots := self.img_pane.get_dots()) == 4:
             wx.CallLater(500, self.after_dot_config)
-            self.dots = list(map(np.array, map(operator.methodcaller("Get"), dots)))
-            print(self.dots)
+            self.dots = np.array(list(map(np.array, map(operator.methodcaller("Get"), dots))))
         e.Skip()
 
     def after_dot_config(self):
@@ -66,7 +65,8 @@ class MainNotebook(wx.Notebook):
         self.settings.config_but.Enable(True)
 
     def on_slider_change(self, e):
-        self.img_pane.threshold = self.settings.slider.GetValue() / 100
+        self.img_pane.threshold1 = self.settings.slider1.GetValue() / 100
+        self.img_pane.threshold2 = 2 + self.settings.slider1.GetValue() / 10
 
     def on_config(self, e):
         self.img_pane.dotting = True
@@ -93,3 +93,4 @@ class MainNotebook(wx.Notebook):
 app = wx.App()
 MainFrame().Show()
 app.MainLoop()
+7

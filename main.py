@@ -11,7 +11,8 @@ class MainFrame(wx.Frame):
         super().__init__(None, title="Social Distancing Enforcer")
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(MainNotebook(self))
+        self.nb = MainNotebook(self)
+        sizer.Add(self.nb)
         self.SetSizerAndFit(sizer)
 
         # os.getcwd() + r"\resources\WalkByShop1cor.mpg"
@@ -35,7 +36,7 @@ class MainNotebook(wx.Notebook):
         self.img_pane = self.create_img_pane(self, cap)
         self.settings = UI.image.SettingsPanel(self)
 
-        self.AddPage(self.vid_pane, "Video")
+        self.AddPage(self.img_pane, "Video")
         self.AddPage(self.settings, "Settings")
 
         self.Bind(wx.EVT_LEFT_DOWN, self.on_click)
@@ -44,10 +45,11 @@ class MainNotebook(wx.Notebook):
         self.Bind(wx.EVT_RADIOBOX, self.on_inp_change)
 
     def on_click(self, e):
-        if self.configuring and len(dots := self.get_dots()) == 4:
+        if self.img_pane.configuring and len(dots := self.get_dots()) == 4:
             wx.CallLater(500, self.after_dot_config)
             print(list(map(operator.methodcaller("Get"), dots)))  # use for dis estim
             print(self.settings.length_text.GetLineText(0), self.settings.width_text.GetLineText(0))
+        e.Skip()
 
     def after_dot_config(self):
         self.img_pane.dotting = False

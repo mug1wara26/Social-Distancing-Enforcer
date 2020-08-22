@@ -47,7 +47,6 @@ class MainNotebook(wx.Notebook):
 
         self.Bind(wx.EVT_LEFT_DOWN, self.on_click)
         self.Bind(wx.EVT_BUTTON, self.on_config)
-        self.Bind(wx.EVT_TEXT, self.call_transform_info)
         self.Bind(wx.EVT_SCROLL_CHANGED, self.on_slider_change)
         self.Bind(wx.EVT_RADIOBOX, self.on_inp_change)
         self.Bind(wx.EVT_FILEPICKER_CHANGED, self.on_inp_change)

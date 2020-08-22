@@ -88,8 +88,6 @@ class SettingsPanel(wx.Panel):
         row2.Add(wx.StaticText(self, label="Minimum Points:"), 0, wx.ALIGN_CENTER, 5)
         row2.Add(self.slider2)
 
-        self.config_but = wx.Button(self, label="Configure")
-
         self.length_text = wx.TextCtrl(self, size=wx.Size(80, 22), value="1")
         self.width_text = wx.TextCtrl(self, size=wx.Size(80, 22), value="1")
         row3 = wx.BoxSizer(wx.HORIZONTAL)
@@ -102,27 +100,33 @@ class SettingsPanel(wx.Panel):
         row4.AddStretchSpacer(10)
         row4.Add(self.width_text)
 
-        """
-        row4 = wx.BoxSizer(wx.HORIZONTAL)
+        row5 = wx.BoxSizer(wx.HORIZONTAL)
     
         inp_choice = wx.RadioBox(self, choices=["Webcam", "Video File"], majorDimension=1)
         inp_choice.SetSelection(0)
-        row4.Add(inp_choice)
-        row4.AddStretchSpacer(10)
+        row5.Add(inp_choice)
+        row5.AddStretchSpacer(10)
         self.file_picker = wx.FilePickerCtrl(self)
-        row4.Add(self.file_picker, 0, wx.EXPAND, 5)
-        """
+        self.file_picker.Enable(False)
+        row5.Add(self.file_picker, 0, wx.EXPAND, 5)
+        row5.AddStretchSpacer(10)
+        self.change_but = wx.Button(self, label="Change", id=wx.ID_HIGHEST + 2)
+        self.change_but.Enable(False)
+        row5.Add(self.change_but, 0, wx.ALIGN_CENTER, 5)
 
         v_sizer = wx.BoxSizer(wx.VERTICAL)
         row1.SetSizeHints(self)
         row2.SetSizeHints(self)
         row3.SetSizeHints(self)
         row4.SetSizeHints(self)
+        row5.SetSizeHints(self)
 
         v_sizer.Add(row1, 0, wx.ALL, 10)
         v_sizer.Add(row2, 0, wx.ALL, 10)
         v_sizer.Add(row3, 0, wx.ALL, 10)
         v_sizer.Add(row4, 0, wx.ALL, 10)
+        v_sizer.Add(row5, 0, wx.ALL, 10)
+        self.config_but = wx.Button(self, label="Configure", id=wx.ID_HIGHEST + 1)
         v_sizer.Add(self.config_but)
         # start_button = wx.Button(self, label="Start")
         # v_sizer.Add(start_button)

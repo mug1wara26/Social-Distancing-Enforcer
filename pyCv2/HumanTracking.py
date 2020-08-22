@@ -30,6 +30,8 @@ def get_boundaries(cap, threshold):
                                        "Model/MobileNetSSD_deploy.caffemodel")
 
     ret, oriframe = cap.read()
+    if not ret:
+        return
     innerframe = imutils.resize(oriframe, width=400)
 
     (h, w) = innerframe.shape[:2]

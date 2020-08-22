@@ -18,6 +18,9 @@ class CV2ImagePanel(wx.Panel):
         self.dotting = False
         self.configuring = False
 
+        # self.start()
+
+    def start(self):
         # init the first frame
         frame = self.image_factory(self.cap, self.threshold, 2)
         dims = tuple(reversed(frame.shape[:2]))
@@ -35,8 +38,6 @@ class CV2ImagePanel(wx.Panel):
         self.Bind(wx.EVT_SIZE, self.on_resize)
         self.Bind(wx.EVT_CLOSE, self.on_close)
 
-        self.settings = None
-
     def on_click(self, e):
         if self.dotting:
             self.dots.append(e.GetPosition())
@@ -48,7 +49,6 @@ class CV2ImagePanel(wx.Panel):
         self.cap.release()
         self.Close()
         e.Skip()
-
 
     def on_resize(self, e):
         self.bmp = wx.Bitmap(self.bmp.ConvertToImage().Scale(*self.GetSize()))
@@ -83,14 +83,14 @@ class SettingsPanel(wx.Panel):
 
         self.slider = wx.Slider(self, maxValue=100)
         row1 = wx.BoxSizer(wx.HORIZONTAL)
-        row1.Add(wx.StaticText(self, label="Minimum Point:"), 0, wx.ALIGN_CENTER, 5)
+        row1.Add(wx.StaticText(self, label="Confidence:"), 0, wx.ALIGN_CENTER, 5)
         row1.Add(self.slider)
         row1.AddStretchSpacer(20)
         self.config_but = wx.Button(self, label="Configure")
         row1.Add(self.config_but)
 
-        self.length_text = wx.TextCtrl(self, size=wx.Size(80, 22), value="0")
-        self.width_text = wx.TextCtrl(self, size=wx.Size(80, 22), value="0")
+        self.length_text = wx.TextCtrl(self, size=wx.Size(80, 22), value="1")
+        self.width_text = wx.TextCtrl(self, size=wx.Size(80, 22), value="1")
         row2 = wx.BoxSizer(wx.HORIZONTAL)
         row2.Add(wx.StaticText(self, label="Length (m):"), 0, wx.ALIGN_CENTER, 5)
         row2.AddStretchSpacer(10)
@@ -117,6 +117,11 @@ class SettingsPanel(wx.Panel):
         v_sizer.Add(row1, 0, wx.ALL, 10)
         v_sizer.Add(row2, 0, wx.ALL, 10)
         v_sizer.Add(row3, 0, wx.ALL, 10)
+        # start_button = wx.Button(self, label="Start")
+        # v_sizer.Add(start_button)
         v_sizer.SetSizeHints(self)
 
         self.SetSizerAndFit(v_sizer)
+
+        # start_button.Bind(wx.EVT_BUTTON, self.start)
+

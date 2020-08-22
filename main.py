@@ -35,12 +35,12 @@ class MainFrame(wx.Frame):
 class MainNotebook(wx.Notebook):
     def __init__(self, parent):
         super().__init__(parent)
-        self.dots = [np.array(0, 0)] * 4
+        self.dots = np.array((np.array((1, 1)), np.array((1, 2)), np.array((2, 1)), np.array((2, 2))))
 
         cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
         self.settings = UI.image.SettingsPanel(self)
-        self.img_pane = UI.image.CV2ImagePanel(parent, self.img_factory, r"resources/config_mode", cap)
+        self.img_pane = UI.image.CV2ImagePanel(self, self.img_factory, r"resources/config_mode", cap)
 
         self.AddPage(self.img_pane, "Video")
         self.AddPage(self.settings, "Settings")
@@ -79,16 +79,15 @@ class MainNotebook(wx.Notebook):
         e.Skip()
 
     def on_inp_change(self, e):
-        print("Filepath: ", self.settings.file_picker.GetPath())
-        if e.GetSelection() and not self.settings.file_picker.GetPath():
-            self.img_pane = self.create_img_pane(self, cv2.VideoCapture(self.settings.file_picker.GetPath()))
+        if e.GetSelection():
+            self.settings.file_picker.Enable(True)
         else:
-            self.img_pane = self.create_img_pane(self, cv2.VideoCapture(0, cv2.CAP_DSHOW))
+            self.settings.file_picker.Enable(False)
 
     def img_factory(self, cap, thres1, thres2):
         return HumanTracking.display_frame(*HumanTracking.get_boundaries(cap, thres1), self.dots,
-                                    int(self.settings.length_text.GetLineText(0)),
-                                    int(self.settings.width_text.GetLineText(0)), thres2, 1)
+                                    float(self.settings.length_text.GetLineText(0)),
+                                    float(self.settings.width_text.GetLineText(0)), thres2, 1, 5)
 
 
 app = wx.App()

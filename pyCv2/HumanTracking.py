@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 import numpy as np
@@ -70,7 +71,7 @@ def display_frame(frame, innerframe, dimensions, corners, h, w, minPts, epsilon,
     toIncrement = 0
     for i in range(len(clusterIndex)):
         if (clusterIndex.count(clusterIndex[i]) >= 2 and clusterIndex[i] != -1):
-            toIncrement += 1
+            toIncrement = max(clusterIndex.count(clusterIndex[i]), toIncrement)
         cv2.circle(frame, (trc[i][0], trc[i][1]), radius=3, color=vals[clusterIndex[i]], thickness=-1)
     if (toIncrement != 0):
         hasDanger += toIncrement
@@ -80,7 +81,8 @@ def display_frame(frame, innerframe, dimensions, corners, h, w, minPts, epsilon,
    # cv2.imshow("Frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
     if (hasDanger > threshold):
         print("Failures detected!")
-        cv2.imwrite("../Detection/" + datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ".png", copyOf)
+        #os.chdir("../Detection/")
+        cv2.imwrite("./" + datetime.now().strftime("%m/%d/%Y,%H:%M:%S") + ".jpg", frame)
 
 
     return cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
@@ -167,7 +169,7 @@ def transformedImage(image, points, x, y, hMatrix, height, width, originalPoints
             #print(np.sqrt(((points[i][0][0] - points[j][0][0]) * width) ** 2 + ((points[i][0][1] - points[j][0][0])*height) ** 2))
             #print(abs(points[i][0][0] - points[j][0][0]) * width)
             if(3  > getDistance(points[i], points[j], height, width)):#np.sqrt(((points[i][0][0] - points[j][0][0]) * width) ** 2 + ((points[i][0][1] - points[j][0][1])*height) ** 2)):
-                cv2.line(image, (originalPoints[i][0], originalPoints[i][1]), (originalPoints[j][0], originalPoints[j][1]), (0, 0, 0), thickness=3)
+                cv2.line(image, (originalPoints[i][0], originalPoints[i][1]), (originalPoints[j][0], originalPoints[j][1]), (0, 0, 255), thickness=3)
 
     return warped
 
@@ -180,12 +182,12 @@ def get_ratio(orimage, transimage):
 
 
 if __name__ == "__main__":
-    #cap = cv2.VideoCapture("../resources/View_001/frame_%04d.jpg", cv2.CAP_IMAGES)
-    cap = cv2.VideoCapture("../resources/video.avi")
+    cap = cv2.VideoCapture("../resources/View_001/frame_%04d.jpg", cv2.CAP_IMAGES)
+    #cap = cv2.VideoCapture("../resources/video.avi")
     points = np.array([[53, 248], [87, 198], [141, 205], [117, 257]])  # pass 4 points here
     height, width = 5, 5
     minPts, epsilon = 3, 1
-    threshold = 5
+    threshold = 2
     while True:
         transimage, dimensions, oriframe = get_boundaries(cap, 0.01)
         #ret, orimage = cap.read()

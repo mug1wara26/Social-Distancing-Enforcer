@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import numpy as np
 import imutils
 import cv2
@@ -36,7 +38,8 @@ def get_boundaries(cap, threshold):
     return innerframe, dimensions, oriframe
 
 
-def display_frame(frame, innerframe, dimensions, corners, h, w, minPts, epsilon):
+def display_frame(frame, innerframe, dimensions, corners, h, w, minPts, epsilon, threshold):
+    copyOf = frame
     for dimension in dimensions:
         xScale, yScale = get_ratio(frame, innerframe)
         startX = int(dimension[0] * xScale)
@@ -62,6 +65,7 @@ def display_frame(frame, innerframe, dimensions, corners, h, w, minPts, epsilon)
     clusterIndex = [0] * len(trc)
     dbscan(minPts, epsilon, newTrc, height, width, clusterIndex)
     # cv2.imshow("Warped", warped)
+    '''frankly, this is pretty awful, but too bad'''
     vals = [(0, 0, 255), (0, 0, 0), (255, 0, 0), (255, 255, 0), (0, 255, 255), (255, 255, 255)]
     toIncrement = 0
     for i in range(len(clusterIndex)):
@@ -72,10 +76,12 @@ def display_frame(frame, innerframe, dimensions, corners, h, w, minPts, epsilon)
         hasDanger += toIncrement
     else:
         hasDanger = 0
-        print("no more AAAA")
+        #print("no more AAAA")
    # cv2.imshow("Frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-    if (hasDanger > 2):
-        print("AAAA")
+    if (hasDanger > threshold):
+        print("Failures detected!")
+        cv2.imwrite("../Detection/" + datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ".png", copyOf)
+
 
     return cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
@@ -179,11 +185,12 @@ if __name__ == "__main__":
     points = np.array([[53, 248], [87, 198], [141, 205], [117, 257]])  # pass 4 points here
     height, width = 5, 5
     minPts, epsilon = 3, 1
+    threshold = 5
     while True:
         transimage, dimensions, oriframe = get_boundaries(cap, 0.01)
         #ret, orimage = cap.read()
 
-        frame = display_frame(oriframe, transimage, dimensions, points, height, width, minPts, epsilon)
+        frame = display_frame(oriframe, transimage, dimensions, points, height, width, minPts, epsilon, threshold)
         cv2.imshow("frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

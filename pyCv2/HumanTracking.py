@@ -34,6 +34,10 @@ def get_boundaries(cap, threshold):
 
     return innerframe, dimensions
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2f6ac831fbcbbbb86a4a9023f5a6c7328e4ea366
 def display_frame(innerframe, dimensions):
     print(dimensions)
     for dimension in dimensions:

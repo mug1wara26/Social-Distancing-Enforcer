@@ -5,8 +5,8 @@ import os
 
 
 def get_boundaries(cap, threshold):
-    net = cv2.dnn.readNetFromCaffe("../Model/MobileNetSSD_deploy.prototxt.txt",
-                                   "../Model/MobileNetSSD_deploy.caffemodel")
+    net = cv2.dnn.readNetFromCaffe("/Model/MobileNetSSD_deploy.prototxt.txt",
+                                   "/Model/MobileNetSSD_deploy.caffemodel")
 
     ret, innerframe = cap.read()
     innerframe = imutils.resize(innerframe, width=400)
@@ -37,15 +37,10 @@ def get_boundaries(cap, threshold):
     return innerframe, dimensions
 
 
-<<<<<<< HEAD
-def display_frame(innerframe, dms):
-    #print(dms)
-    for dimension in dms:
-=======
+
 def display_frame(innerframe, dimensions):
     print(dimensions)
     for dimension in dimensions:
->>>>>>> 5c17e0ffca71ba7c115ca3c5de1e8f3e34b50238
         startX = dimension[0]
         startY = dimension[1]
         endX = dimension[2]

@@ -65,6 +65,7 @@ def display_frame(frame, innerframe, dimensions):
         # cv2.imshow("Warped", warped)
         vals = [(0, 0, 255), (0, 0, 0), (255, 0, 0), (255, 255, 0), (0, 255, 255), (255, 255, 255)]
         toIncrement = 0
+        print(clusterIndex)
         for i in range(len(clusterIndex)):
             if (clusterIndex.count(clusterIndex[i]) >= 2 and clusterIndex[i] != -1):
                 toIncrement += 1

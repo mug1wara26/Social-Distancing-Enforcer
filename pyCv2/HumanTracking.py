@@ -74,7 +74,7 @@ def display_frame(frame, innerframe, dimensions):
     else:
         hasDanger = 0
         print("no more AAAA")
-    cv2.imshow("Frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+    #cv2.imshow("Frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
     if (hasDanger > 6):
         print("AAAA")
 

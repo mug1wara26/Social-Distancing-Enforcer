@@ -18,7 +18,7 @@ def get_boundaries(cap, threshold):
     net.setInput(blob)
     detections = net.forward()
 
-    dimensions = []
+    dimensions = [[None, None, None, None, None]]
 
     for i in np.arange(0, detections.shape[2]):
         # extract the confidence (i.e., probability) associated with

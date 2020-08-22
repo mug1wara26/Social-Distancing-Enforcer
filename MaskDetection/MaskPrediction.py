@@ -24,7 +24,7 @@ def predict_values(frame, faceCascade, model):
         faces_list.append(face_frame)
         if len(faces_list)>0:
             preds = model.predict(faces_list)
-        for (mask, noMask) in preds:
+        for (Mask, noMask) in preds:
             if Mask > noMask:
                 label = "Mask"
                 color = (0, 255, 0)

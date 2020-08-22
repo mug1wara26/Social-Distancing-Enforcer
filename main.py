@@ -2,6 +2,8 @@ import os
 
 import wx
 import cv2
+import numpy as np
+
 import UI.image
 from pyCv2 import HumanTracking
 
@@ -33,6 +35,7 @@ class MainFrame(wx.Frame):
 class MainNotebook(wx.Notebook):
     def __init__(self, parent):
         super().__init__(parent)
+        self.dots = None
 
         cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
@@ -44,17 +47,23 @@ class MainNotebook(wx.Notebook):
 
         self.Bind(wx.EVT_LEFT_DOWN, self.on_click)
         self.Bind(wx.EVT_BUTTON, self.on_config)
+        self.Bind(wx.EVT_TEXT, self.call_transform_info)
         self.Bind(wx.EVT_SCROLL_CHANGED, self.on_slider_change)
         self.Bind(wx.EVT_RADIOBOX, self.on_inp_change)
+        self.Bind(wx.EVT_FILEPICKER_CHANGED, self.on_inp_change)
         self.Bind(wx.EVT_CLOSE, self.on_close)
 
     def on_click(self, e):
         if self.img_pane.configuring and len(dots := self.img_pane.get_dots()) == 4:
             wx.CallLater(500, self.after_dot_config)
-            print(list(map(operator.methodcaller("Get"), dots)))  # use for dis estim
-            print(self.settings.length_text.GetLineText(0), self.settings.width_text.GetLineText(0))
-            print(self.img_pane.get_dots())
+            self.dots = list(map(np.array, map(operator.methodcaller("Get"), dots)))
+            print(self.dots)
+            self.call_transform_info()
         e.Skip()
+
+    def call_transform_info(self, e=None):
+        HumanTracking.transformInfo(self.dots, int(self.settings.length_text.GetLineText(0)),
+                                    int(self.settings.width_text.GetLineText(0)), 500)
 
     def after_dot_config(self):
         self.img_pane.dotting = False
@@ -69,19 +78,22 @@ class MainNotebook(wx.Notebook):
         self.img_pane.dotting = True
         self.img_pane.configuring = True
         self.settings.config_but.Enable(False)
+        self.SetSelection(0)
 
     def on_close(self, e):
         self.img_pane.on_close(e)
         e.Skip()
 
     def on_inp_change(self, e):
-        self.img_pane.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-        print(e.GetSelection())
+        if e.GetSelection() and not self.settings.file_picker.GetPath():
+            self.img_pane = self.create_img_pane(self, cv2.VideoCapture(self.settings.file_picker.GetPath()))
+        else:
+            self.img_pane = self.create_img_pane(self, cv2.VideoCapture(0, cv2.CAP_DSHOW))
 
     @staticmethod
     def create_img_pane(parent, cap):
         return UI.image.CV2ImagePanel(parent, lambda a, b: HumanTracking.display_frame(
-            *HumanTracking.get_boundaries(a, b)), r"resources/config_mode", cap)
+            *HumanTracking.get_boundaries(a.read()[1], b)), r"resources/config_mode", cap)
 
 
 app = wx.App()

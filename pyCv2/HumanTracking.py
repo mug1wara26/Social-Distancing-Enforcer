@@ -38,11 +38,11 @@ def get_boundaries(cap, threshold):
 
 def display_frame(frame, innerframe, dimensions):
     for dimension in dimensions:
-        x, y = get_ratio(frame, innerframe)
-        startX = int(dimension[0] * x)
-        startY = int(dimension[1] * y)
-        endX = int(dimension[2] * x)
-        endY = int(dimension[3] * y)
+        xScale, yScale = get_ratio(frame, innerframe)
+        startX = int(dimension[0] * xScale)
+        startY = int(dimension[1] * yScale)
+        endX = int(dimension[2] * xScale)
+        endY = int(dimension[3] * yScale)
         confidence = dimension[4]
 
         cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 2)
@@ -53,31 +53,30 @@ def display_frame(frame, innerframe, dimensions):
         cv2.putText(frame, label, (startX, y),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-        #Draw circles on frame correctly
+    #Draw circles on frame correctly
+    hasDanger = 0
+    trc = bottomCentres(frame, innerframe, dimensions)
+    points = np.array([[53, 248], [87, 198], [141, 205], [117, 257]])  # pass 4 points here
+    height, width, hMatrix = transformInfo(points, 5, 5, 500)  # pass width, height where 5, 5 is
+    newTrc = transformPoints(trc, hMatrix)
+    warped = transformedImage(frame, newTrc, 1500, 1500, hMatrix, height, width, trc)
+    clusterIndex = [0] * len(trc)
+    dbscan(3, 1, newTrc, height, width, clusterIndex)
+    # cv2.imshow("Warped", warped)
+    vals = [(0, 0, 255), (0, 0, 0), (255, 0, 0), (255, 255, 0), (0, 255, 255), (255, 255, 255)]
+    toIncrement = 0
+    for i in range(len(clusterIndex)):
+        if (clusterIndex.count(clusterIndex[i]) >= 2 and clusterIndex[i] != -1):
+            toIncrement += 1
+        cv2.circle(frame, (trc[i][0], trc[i][1]), radius=3, color=vals[clusterIndex[i]], thickness=-1)
+    if (toIncrement != 0):
+        hasDanger += toIncrement
+    else:
         hasDanger = 0
-        trc = bottomCentres(dimensions)
-        points = np.array([[53, 248], [87, 198], [141, 205], [117, 257]])  # pass 4 points here
-        height, width, hMatrix = transformInfo(points, 5, 5, 500)  # pass width, height where 5, 5 is
-        newTrc = transformPoints(trc, hMatrix)
-        warped = transformedImage(frame, newTrc, 1500, 1500, hMatrix, height, width, trc)
-        clusterIndex = [0] * len(trc)
-        dbscan(3, 1, newTrc, height, width, clusterIndex)
-        # cv2.imshow("Warped", warped)
-        vals = [(0, 0, 255), (0, 0, 0), (255, 0, 0), (255, 255, 0), (0, 255, 255), (255, 255, 255)]
-        toIncrement = 0
-        print(clusterIndex)
-        for i in range(len(clusterIndex)):
-            if (clusterIndex.count(clusterIndex[i]) >= 2 and clusterIndex[i] != -1):
-                toIncrement += 1
-            cv2.circle(frame, (int(trc[i][0] * x), int(trc[i][1] * y)), radius=3, color=vals[clusterIndex[i]], thickness=-1)
-        if (toIncrement != 0):
-            hasDanger += toIncrement
-        else:
-            hasDanger = 0
-            print("no more AAAA")
-        cv2.imshow("Frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        if (hasDanger > 6):
-            print("AAAA")
+        print("no more AAAA")
+    cv2.imshow("Frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+    if (hasDanger > 6):
+        print("AAAA")
 
     return cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
@@ -104,10 +103,11 @@ def transformInfo(corners, knownHeight, knownWidth, offset):
     return knownHeight/maxHeight, knownWidth/maxWidth, hMatrix
 
 
-def bottomCentres(points):
+def bottomCentres(frame, innerframe, points):
     bc = []
+    xScale, yScale = get_ratio(frame, innerframe)
     for p in points:
-        bc.append((2*int((p[0]+p[2])/2),2*int(p[3])))
+        bc.append((int((p[0]+p[2])/2 * xScale), int(p[3] * yScale)))
     return bc
 
 

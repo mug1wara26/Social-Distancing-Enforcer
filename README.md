@@ -16,5 +16,4 @@ This project was created for a hackthon to detect distance between people in vid
 
 **Windows**
 
-`pip install -r requirements.txt` 
-
+`pip install -r requirements.txt`

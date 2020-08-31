@@ -5,26 +5,23 @@ import numpy as np
 import imutils
 import cv2
 
-
-
 right_clicks = list()
+
 
 def mouse_callback(event, x, y, flags, params):
     # right-click event value is 2
     if event == 2:
         global right_clicks
         if len(right_clicks) != 4:
-
             # store the coordinates of the right-click event
             right_clicks.append([x, y])
             print(right_clicks)
 
 
-
 def get_boundaries(cap, threshold):
     if __name__ == "__main__":
         net = cv2.dnn.readNetFromCaffe("../Model/MobileNetSSD_deploy.prototxt.txt",
-                                   "../Model/MobileNetSSD_deploy.caffemodel")
+                                       "../Model/MobileNetSSD_deploy.caffemodel")
     else:
         net = cv2.dnn.readNetFromCaffe("Model/MobileNetSSD_deploy.prototxt.txt",
                                        "Model/MobileNetSSD_deploy.caffemodel")
@@ -55,7 +52,7 @@ def get_boundaries(cap, threshold):
             box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
             (startX, startY, endX, endY) = box.astype("int")
             idx = int(detections[0, 0, i, 1])
-            if(idx == 15):
+            if (idx == 15):
                 dimensions.append([startX, startY, endX, endY, confidence])
 
     return oriframe, innerframe, dimensions
@@ -79,7 +76,7 @@ def display_frame(frame, innerframe, dimensions, corners, h, w, minPts, epsilon,
         cv2.putText(frame, label, (startX, y),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-    #Draw circles on frame correctly
+    # Draw circles on frame correctly
     hasDanger = 0
     trc = bottomCentres(frame, innerframe, dimensions)
     height, width, hMatrix = transformInfo(corners, h, w, 500)  # pass width, height where 5, 5 is
@@ -99,11 +96,11 @@ def display_frame(frame, innerframe, dimensions, corners, h, w, minPts, epsilon,
         hasDanger += toIncrement
     else:
         hasDanger = 0
-        #print("no more AAAA")
-   # cv2.imshow("Frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        # print("no more AAAA")
+    # cv2.imshow("Frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
     if (hasDanger >= threshold):
         print("Failures detected!")
-        #os.chdir("../Detection/")
+        # os.chdir("../Detection/")
         cv2.imwrite("./" + datetime.now().strftime("%m/%d/%Y,%H:%M:%S") + ".jpg", frame)
 
     return cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
@@ -120,33 +117,33 @@ def transformInfo(corners, knownHeight, knownWidth, offset):
     heightA = np.sqrt(((c2[0] - c3[0]) ** 2) + ((c2[1] - c3[1]) ** 2))
     heightB = np.sqrt(((c1[0] - c4[0]) ** 2) + ((c1[1] - c4[1]) ** 2))
     maxHeight = max(int(heightA), int(heightB))
-    if maxWidth/maxHeight > knownWidth/knownHeight:
-        maxWidth = maxHeight * knownWidth/knownHeight
+    if maxWidth / maxHeight > knownWidth / knownHeight:
+        maxWidth = maxHeight * knownWidth / knownHeight
     dst = np.array([
         [offset, offset],
         [offset + maxWidth - 1, offset],
-        [offset + maxWidth - 1 , offset + maxHeight - 1],
+        [offset + maxWidth - 1, offset + maxHeight - 1],
         [500, offset + maxHeight - 1]], dtype="float32")
     hMatrix, M = cv2.findHomography(corners, dst)
-    return knownHeight/maxHeight, knownWidth/maxWidth, hMatrix
+    return knownHeight / maxHeight, knownWidth / maxWidth, hMatrix
 
 
 def bottomCentres(frame, innerframe, points):
     bc = []
     xScale, yScale = get_ratio(frame, innerframe)
     for p in points:
-        bc.append((int((p[0]+p[2])/2 * xScale), int(p[3] * yScale)))
+        bc.append((int((p[0] + p[2]) / 2 * xScale), int(p[3] * yScale)))
     return bc
 
 
 def transformPoints(points, hMatrix):
-    if(len(points) == 0):
+    if (len(points) == 0):
         return np.array([])
     return cv2.perspectiveTransform(np.float32(points).reshape(-1, 1, 2), hMatrix)
 
 
 def getDistance(a, b, h, w):
-    return np.sqrt(((a[0][0] - b[0][0]) * w) ** 2 + ((a[0][1] -b[0][1])*h) ** 2)
+    return np.sqrt(((a[0][0] - b[0][0]) * w) ** 2 + ((a[0][1] - b[0][1]) * h) ** 2)
 
 
 def dbscan(epsilon, minPts, points, height, width, clusterIndex):
@@ -156,21 +153,22 @@ def dbscan(epsilon, minPts, points, height, width, clusterIndex):
             continue
         neighbours = []
         for j in range(len(points)):
-            if(i != j):
-                if(getDistance(points[i], points[j], height, width) <= epsilon):
-                    print(i, j, getDistance(points[i], points[j], height, width), getDistance(points[j], points[i], height, width))
+            if (i != j):
+                if (getDistance(points[i], points[j], height, width) <= epsilon):
+                    print(i, j, getDistance(points[i], points[j], height, width),
+                          getDistance(points[j], points[i], height, width))
                     neighbours.append(j)
-        if(len(neighbours) < minPts):
+        if (len(neighbours) < minPts):
             clusterIndex[i] = -1
             continue
         cluster += 1
         clusterIndex[i] = cluster
-        while(len(neighbours) != 0):
+        while (len(neighbours) != 0):
             q = neighbours[0]
             neighbours.pop(0)
-            if(clusterIndex[q] == -1):
+            if (clusterIndex[q] == -1):
                 clusterIndex[q] = cluster
-            if(clusterIndex[q] != 0):
+            if (clusterIndex[q] != 0):
                 continue
             clusterIndex[q] = cluster
             newNeighbours = []
@@ -178,7 +176,7 @@ def dbscan(epsilon, minPts, points, height, width, clusterIndex):
                 if (q != j):
                     if (getDistance(points[q], points[j], height, width) <= epsilon):
                         newNeighbours.append(j)
-            if(len(newNeighbours) >= minPts):
+            if (len(newNeighbours) >= minPts):
                 neighbours += newNeighbours
 
 
@@ -187,13 +185,17 @@ def transformedImage(image, points, x, y, hMatrix, height, width, originalPoints
     for i in range(len(points)):
         cv2.circle(warped, (int(points[i][0][0]), int(points[i][0][1])), radius=3, color=(0, 0, 255), thickness=-1)
         for j in range(len(points)):
-            #print(np.sqrt(((points[i][0][0] - points[j][0][0]) * width) ** 2 + ((points[i][0][1] - points[j][0][0])*height) ** 2))
-            #print(abs(points[i][0][0] - points[j][0][0]) * width)
-            if(i == j):
+            # print(np.sqrt(((points[i][0][0] - points[j][0][0]) * width) ** 2 + ((points[i][0][1] - points[j][0][0])*height) ** 2))
+            # print(abs(points[i][0][0] - points[j][0][0]) * width)
+            if (i == j):
                 continue
-            if(3  > getDistance(points[i], points[j], height, width)):#np.sqrt(((points[i][0][0] - points[j][0][0]) * width) ** 2 + ((points[i][0][1] - points[j][0][1])*height) ** 2)):
-                cv2.line(image, (originalPoints[i][0], originalPoints[i][1]), (originalPoints[j][0], originalPoints[j][1]), (0, 0, 255), thickness=3)
-                cv2.putText(image, str(getDistance(points[i], points[j], height, width)) + " metres", (int((originalPoints[i][0]+originalPoints[j][0])/2), int((originalPoints[i][1]+ originalPoints[j][1])/2)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+            if (3 > getDistance(points[i], points[j], height,
+                                width)):  # np.sqrt(((points[i][0][0] - points[j][0][0]) * width) ** 2 + ((points[i][0][1] - points[j][0][1])*height) ** 2)):
+                cv2.line(image, (originalPoints[i][0], originalPoints[i][1]),
+                         (originalPoints[j][0], originalPoints[j][1]), (0, 0, 255), thickness=3)
+                cv2.putText(image, str(getDistance(points[i], points[j], height, width)) + " metres", (
+                int((originalPoints[i][0] + originalPoints[j][0]) / 2),
+                int((originalPoints[i][1] + originalPoints[j][1]) / 2)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
     return warped
 
@@ -206,16 +208,16 @@ def get_ratio(orimage, transimage):
 
 
 if __name__ == "__main__":
-    #global right_clicks
+    # global right_clicks
     cap = cv2.VideoCapture("../resources/View_001/frame_%04d.jpg", cv2.CAP_IMAGES)
-    #cap = cv2.VideoCapture("../resources/video.avi")
+    # cap = cv2.VideoCapture("../resources/video.avi")
     points = np.array([[53, 248], [87, 198], [141, 205], [117, 257]])  # pass 4 points here
     height, width = 5, 5
     minPts, epsilon = 3, 1
-    #threshold = 2
+    # threshold = 2
     while True:
         oriframe, transimage, dimensions = get_boundaries(cap, 0.01)
-        #ret, orimage = cap.read()
+        # ret, orimage = cap.read()
 
         frame = display_frame(oriframe, transimage, dimensions, points, height, width, 2, epsilon, minPts)
         for p in right_clicks:
@@ -223,7 +225,7 @@ if __name__ == "__main__":
         cv2.imshow("frame", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         cv2.setMouseCallback("frame", mouse_callback, frame)
 
-        if(len(right_clicks) == 4):
+        if (len(right_clicks) == 4):
             points = np.array(right_clicks)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):

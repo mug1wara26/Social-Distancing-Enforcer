@@ -88,13 +88,21 @@ class MainNotebook(wx.Notebook):
         cap = cv2.VideoCapture(self.settings.file_picker.GetPath())
         self.img_pane.cap = cap
 
-    def img_factory(self, cap, thres1, thres2):
-        args = HumanTracking.get_boundaries(cap, thres1)
+    def img_factory(self, cap, thresholds):
+        try:
+            args = HumanTracking.get_boundaries(cap, thresholds[0])
+        except cv2.error:
+            if self.GetSelection() == 0:
+                raise
+            args = None
+
         if args is None:
             return None
+
         return HumanTracking.display_frame(*args, self.dots,
-                                    float(self.settings.length_text.GetLineText(0)),
-                                    float(self.settings.width_text.GetLineText(0)), thres2, 1, 5)
+                                           float(self.settings.length_text.GetLineText(0)),
+                                           float(self.settings.width_text.GetLineText(0)),
+                                           thresholds[1], 1, 5)
 
 
 app = wx.App()

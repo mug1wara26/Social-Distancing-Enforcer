@@ -14,20 +14,21 @@ class CV2ImagePanel(wx.Panel):
         self.image_factory = image_factory
         self.dots = []
         self.cap = cap
-        self.threshold1 = self.threshold2 = 0
+        self.thresholds = [0, 0]
         self.dotting = False
         self.configuring = False
 
         # init the first frame
-        frame = self.image_factory(self.cap, self.threshold1, self.threshold2)
+        frame = self.image_factory(self.cap, self.thresholds)
         dims = tuple(reversed(frame.shape[:2]))
         self.SetSizeHints(*dims)
         self.bmp = wx.Bitmap.FromBuffer(*dims, frame)
 
-        # update frame regularly
+        # start timer to know when to update frame
         self.timer = wx.Timer(self)
         self.timer.Start(int(1000 / fps))
 
+        # binding functions
         self.Bind(wx.EVT_PAINT, self.on_paint)
         self.Bind(wx.EVT_TIMER, self.next_frame)
 
@@ -36,21 +37,25 @@ class CV2ImagePanel(wx.Panel):
         self.Bind(wx.EVT_CLOSE, self.on_close)
 
     def on_click(self, e):
+        """If in config mode, display dot and propagate event"""
         if self.dotting:
             self.dots.append(e.GetPosition())
             e.ResumePropagation(1)
             e.Skip()
 
     def on_close(self, e):
+        """Handle cleanup"""
         self.timer.Stop()
         self.cap.release()
         self.Close()
         e.Skip()
 
     def on_resize(self, e):
+        """Resize the image when window is resized"""
         self.bmp = wx.Bitmap(self.bmp.ConvertToImage().Scale(*self.GetSize()))
 
     def on_paint(self, e):
+        """Paint the image"""
         dc = wx.BufferedPaintDC(self, self.bmp)
         dc.DrawBitmap(self.bmp, 0, 0)
         dc.SetPen(wx.Pen(wx.Colour(0, 0, 255), 2))
@@ -63,7 +68,8 @@ class CV2ImagePanel(wx.Panel):
                 dc.DrawLine(self.dots[0], self.dots[3])
 
     def next_frame(self, e):
-        frame = self.image_factory(self.cap, self.threshold1, self.threshold2)
+        """Periodically replace frame with the next one"""
+        frame = self.image_factory(self.cap, self.thresholds)
         if frame is None:
             return
         self.bmp = wx.Bitmap.FromBuffer(*self.GetSize(), cv2.resize(frame, tuple(self.GetSize())))
@@ -130,11 +136,6 @@ class SettingsPanel(wx.Panel):
         v_sizer.Add(row5, 0, wx.ALL, 10)
         self.config_but = wx.Button(self, label="Configure")
         v_sizer.Add(self.config_but)
-        # start_button = wx.Button(self, label="Start")
-        # v_sizer.Add(start_button)
         v_sizer.SetSizeHints(self)
 
         self.SetSizerAndFit(v_sizer)
-
-        # start_button.Bind(wx.EVT_BUTTON, self.start)
-

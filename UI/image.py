@@ -5,7 +5,7 @@ import operator
 
 
 class CV2ImagePanel(wx.Panel):
-    def __init__(self, parent, image_factory, config_png_name, cap, fps=15):
+    def __init__(self, parent, image_factory, config_png_name, cap, fps=60):
         super().__init__(parent)
         config_img_bitmap = wx.Bitmap(wx.Image(config_png_name + ".png", wx.BITMAP_TYPE_ANY).Scale(200, 30))
         self.config_img_dims = config_img_bitmap.GetSize()

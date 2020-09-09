@@ -18,6 +18,7 @@ class MainFrame(wx.Frame):
         self.nb = MainNotebook(self)
         sizer.Add(self.nb)
         self.SetSizerAndFit(sizer)
+        self.BackgroundColour = wx.WHITE
 
         # os.getcwd() + r"\resources\WalkByShop1cor.mpg"
 

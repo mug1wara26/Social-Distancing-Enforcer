@@ -65,8 +65,8 @@ class MainNotebook(wx.Notebook):
         self.settings.config_but.Enable(True)
 
     def on_slider_change(self, e):
-        self.img_pane.threshold1 = self.settings.slider1.GetValue() / 100
-        self.img_pane.threshold2 = 2 + self.settings.slider1.GetValue() / 10
+        self.img_pane.thresholds[0] = self.settings.slider1.GetValue() / 100
+        self.img_pane.thresholds[1] = 2 + self.settings.slider1.GetValue() / 10
 
     def on_button(self, e: wx.EVT_BUTTON):
         self.img_pane.dotting = True
